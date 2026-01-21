@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Map from './pages/Map'
 import Stats from './pages/Stats'
 import Tasks from './pages/Tasks'
+import Routes2 from './pages/Routes'
 
 export default function App() {
   return (
@@ -19,7 +20,7 @@ export default function App() {
           <Route path="/account" element={<Account/>}/>
           <Route path="/login" element={<Login/>}/>
           <Route path="/map" element={<Map/>}/>
-          <Route path="/routes" element={<Routes/>}/>
+          <Route path="/routes2" element={<Routes2/>}/>
           <Route path="/stats" element={<Stats/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
         </Routes>

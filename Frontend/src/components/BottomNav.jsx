@@ -21,7 +21,7 @@ export default function BottomNav() {
                     <span className="text-xl font-semibold text-gray-800">Start</span>
                 </div>
             </Link>
-            <Item name="Routes" icon={HiChevronUp} path="/routes"/>
+            <Item name="Routes" icon={HiChevronUp} path="/routes2"/>
         </div>
     )
 }
