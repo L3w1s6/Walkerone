@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/routes2" element={<Routes2/>}/>
           <Route path="/stats" element={<Stats/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
+          <Route path="*" element={<div><p>Unknown path</p></div>}/>
         </Routes>
         <BottomNav/>
       </MobileBody>
