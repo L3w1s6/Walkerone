@@ -1,4 +1,3 @@
-
 import express from "express";
 import mongoose from "mongoose";
 import "dotenv/config";
@@ -16,4 +15,5 @@ async function connect() {
     }
 }
 
+connect();
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
