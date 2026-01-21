@@ -1,13 +1,13 @@
 import Test from './components/test'
+import MobileBody from './components/MobileBody'
 
-function App() {
-
+export default function App() {
   return (
-    <div className='text-center'>
-      <Test />
-      <p className="text-3xl">test</p>
-    </div>
+    <MobileBody>
+      <div className='text-center'>
+        <Test />
+        <p className="text-3xl">test</p>
+      </div>
+    </MobileBody>
   )
 }
-
-export default App
