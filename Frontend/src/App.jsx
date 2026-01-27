@@ -16,7 +16,7 @@ export default function App() {
       <MobileBody>
         <TopNav/>
         <Routes>
-          <Route path="/" element={<Test/>}/>
+          <Route path="/" element={<Login/>}/>
           <Route path="/account" element={<Account/>}/>
           <Route path="/login" element={<Login/>}/>
           <Route path="/map" element={<Map/>}/>
