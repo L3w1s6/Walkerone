@@ -14,18 +14,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <MobileBody>
-        <TopNav/>
-        <Routes>
-          <Route path="/" element={<Login/>}/>
-          <Route path="/account" element={<Account/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/map" element={<Map/>}/>
-          <Route path="/routes2" element={<Routes2/>}/>
-          <Route path="/stats" element={<Stats/>}/>
-          <Route path="/tasks" element={<Tasks/>}/>
-          <Route path="*" element={<div><p>Unknown path</p></div>}/>
-        </Routes>
-        <BottomNav/>
+        <TopNav />
+        <div className="flex-1 w-full overflow-y-auto relative bg-white">
+          <Routes>
+            <Route path="/" element={<Test />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/routes" element={<Routes />} />
+            <Route path="/stats" element={<Stats />} />
+            <Route path="/tasks" element={<Tasks />} />
+          </Routes>
+        </div>
+        <BottomNav />
       </MobileBody>
     </BrowserRouter>
   )
