@@ -1,13 +1,14 @@
 import MobileBody from './components/MobileBody'
 import TopNav from './components/TopNav'
 import BottomNav from './components/BottomNav'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Test from './components/test'
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import Test from './components/Test'
 import Account from './pages/Account'
 import Login from './pages/Login'
 import Map from './pages/Map'
 import Stats from './pages/Stats'
 import Tasks from './pages/Tasks'
+import Routes2 from './pages/Routes'
 
 export default function App() {
   return (
