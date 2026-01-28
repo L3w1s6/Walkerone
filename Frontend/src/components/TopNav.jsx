@@ -14,7 +14,7 @@ const Item = ({name, icon: Icon, path}) => {
 
 export default function TopNav() {
     return (
-        <div className="bg-cyan-100 pt-2 pb-2 flex justify-evenly items-center">
+        <div className="bg-cyan-100 pt-2 pb-2 flex justify-evenly">
             <Item name="Goals" icon={HiChevronDown} path="/tasks"/>
             <Item name="Stats" icon={HiChevronDown} path="/stats"/>
             <Item name="Account" icon={HiOutlineUserCircle} path="/account"/>

@@ -1,30 +1,33 @@
-import { Link } from 'react-router-dom';
-import { HiLocationMarker, HiChevronUp } from "react-icons/hi"; // Using HeroIcons to match your TopNav
+import {Link} from 'react-router-dom';
+import {HiLocationMarker, HiChevronUp} from "react-icons/hi";// Using HeroIcons to match TopNav
+
+const Item = ({name, icon: Icon, path}) => {
+    return (
+        <Link to={path}>
+            <div className="flex flex-col items-center text-green-600 cursor-pointer">
+                <Icon className="w-12 h-12 text-green-600"/>
+                <span className="text-xl font-medium mb-1">{name}</span>
+            </div>
+        </Link>
+    )
+};
 
 export default function BottomNav() {
   return (
     // The Footer Container
-    <div className="h-24 bg-[#86efac] w-full flex justify-between items-end pb-4 px-12 relative z-20 shadow-inner">
-      
-      {/* Left component : Map */}
-      <Link to="/map" className="flex flex-col items-center text-green-900 hover:text-green-700 transition">
-        <HiLocationMarker className="w-8 h-8 mb-1" />
-        <span className="text-sm font-bold">Map</span>
-      </Link>
+    <div className="bg-green-300 pt-2 pb-2 flex justify-evenly">
+        {/* Left component : Map */}
+        <Item name="Map" icon={HiLocationMarker} path="/map"/>
 
-      {/* Center componnent : Start and Stop tracking walk */}
-      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2">
-        <button className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl border-4 border-gray-100 active:scale-95 transition">
-          <span className="text-gray-800 font-bold text-lg">Start</span>
-        </button>
-      </div>
+        {/* Center componnent : Start and Stop tracking walk */}
+        <Link to="/start">
+            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl border-4 border-gray-600 active:scale-95 transition cursor-pointer">
+                <span className="text-xl font-medium mb-1 text-gray-800">Start</span>
+            </div>
+        </Link>
 
-      {/* Right component: Routes */}
-      <Link to="/routes" className="flex flex-col items-center text-green-900 hover:text-green-700 transition">
-        <HiChevronUp className="w-8 h-8 mb-1" />
-        <span className="text-sm font-bold">Routes</span>
-      </Link>
-
+        {/* Right component: Routes */}
+        <Item name="Routes" icon={HiChevronUp} path="/routes2"/>
     </div>
   );
 }
