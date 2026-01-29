@@ -4,7 +4,7 @@ export default function Task() {
     const [taskCompleted, setTaskCompleted] = useState(false);
 
     const handleClick = () => {
-        setTaskCompleted(!taskCompleted);
+        setTaskCompleted(!taskCompleted); // Toggle task completion when the tick is clicked
     };
 
     return (
