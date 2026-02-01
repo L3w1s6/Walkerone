@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 import mongodb, { Double, Int32, MongoClient } from "mongodb";
 import "dotenv/config";
 
+import user from './models/users.js';
+import doctor from './models/doctors.js';
+import task from './models/tasks.js';
+import route from './models/routes.js';
+
 
 // things which need to be modelled
 
@@ -112,4 +117,4 @@ async function addUser(data) {
 
 await connect();
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
-addUser().catch(console.error)
+//addUser().catch(console.error)

@@ -2,18 +2,18 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const userSchema = new Schema({
-    email: {String, required: true},
-    password:  {type: String, required: true},
+    email: String,
+    password: String,
     username: String,
     bio: String,
     pfp: String,  //PLACEHOLDER
    
-    restingHR: Int32, // pull this from user on first start
+    restingHR: Number, // pull this from user on first start
     // query database each time biomarkers are viewed, to see steps and calories burnt from walks which happened that day
-    caloriesBurnt: Int32, 
-    stepCount: Int32,
+    caloriesBurnt: Number, 
+    stepCount: Number,
   
-    friends: [{type: string}], // a user may have many friends, or none at all
+    friends: [{type: String}], // a user may have many friends, or none at all
 })
 
 

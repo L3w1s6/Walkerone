@@ -3,8 +3,8 @@ const { Schema, model } = mongoose;
 
 
 const doctorSchema = new Schema({
-    email: {String, required: true},
-    password:  {type: String, required: true},
+    email: String,
+    password:  String,
     username: String,
     userEmails: [String] // a doctor can be linked to many users, or none at all
 })
