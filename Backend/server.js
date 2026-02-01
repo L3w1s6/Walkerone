@@ -56,48 +56,6 @@ const app = express();
 const client = new MongoClient(URI);
 const { Schema, model } = mongoose;
 
-const user = new Schema({
-    email: {String, required: true},
-    password:  {type: String, required: true},
-    username: String,
-    bio: String,
-    pfp: String,  //PLACEHOLDER
-   
-    restingHR: Int32, // pull this from user on first start
-    // query database each time biomarkers are viewed, to see steps and calories burnt from walks which happened that day
-    caloriesBurnt: Int32, 
-    stepCount: Int32,
-  
-    friends: [{type: string}], // a user may have many friends, or none at all
-})
-
-
-const doctor = new Schema({
-    email: {String, required: true},
-    password:  {type: String, required: true},
-    username: String,
-    userEmails: [String] // a doctor can be linked to many users, or none at all
-})
-
-const route = new Schema({
-    name: {String, required: true},
-    distance: Double,
-    caloriesBurned: Int32,
-    elevationGain: Int32, 
-    stepCount: Int32,
-    waypoint: [{type: String}],
-    // assuming heartrate isnt getting tracked, and is shown to the user at start time
-    email: {String, required: true} // link a route to a user
-})
-
-const tasks = new Schema({
-    task: {type: String, required: true},
-    description: String,
-    creator:  {type: String, required: true}, 
-    assignedTo: {type: String, required: true} // link a task to a user
-})
-
-
 async function connect() {
     try {
         await mongoose.connect(URI)
@@ -132,7 +90,7 @@ async function run() {
 }
 
 // basic stuff for adding a user
-async function addUser() {
+async function addUser(data) {
 
     try {
         await client.connect();
@@ -149,6 +107,8 @@ async function addUser() {
 
     } await client.close()
 }
+
+
 
 await connect();
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
