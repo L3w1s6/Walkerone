@@ -15,7 +15,7 @@ export default function App() {
       <MobileBody>
         <Routes>{/*Fullscreen screens*/}
           <Route path="/" element={<Login/>}/>
-          <Route path="*" element={
+          <Route path="/*" element={
             <div className="flex flex-col h-dvh justify-between">{/*Internal screens*/}
               <TopNav/>
               <div className="flex-1 h-100 overflow-y-auto bg-white">
