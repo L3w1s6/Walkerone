@@ -1,13 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import mongodb, { Double, Int32, MongoClient } from "mongodb";
-import "dotenv/config";
-
-import user from './models/users.js';
-import doctor from './models/doctors.js';
-import task from './models/tasks.js';
-import route from './models/routes.js';
-
+import dotenv from "dotenv";
 
 // things which need to be modelled
 
@@ -52,69 +45,73 @@ import route from './models/routes.js';
 // mongodb is in fact, a piece of crud
 // i hate it.
 
-
-
+const app = express();
+dotenv.config();
 
 const URI = process.env.URI
 const PORT = process.env.PORT
-const app = express();
-const client = new MongoClient(URI);
-const { Schema, model } = mongoose;
 
-async function connect() {
-    try {
-        await mongoose.connect(URI)
-        console.log("connected to server")
-    } catch (error) {
-        console.log(error)
-    }
-}
+mongoose.connect(URI).then(() => {
+    console.log("mongoDB databases connected")
+    app.listen(PORT, () => {
+        console.log(`server running on http://localhost:${PORT}`)
+    })
+})
+    .catch((error) => console.log(error));
 
-// test function to verify the system works as intended
-async function run() {
-    // will probably need to be changed to take a function as a parameter, and run 
-    try {
-        await client.connect();
+// THESE ALL USE TO BE IN SEPERATE FILES BUT I GOT FED UP SO EVERYTHING IS GOING IN HERE FOR NOW
 
-        // testing the connection to mongodb itself
+const doctorSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    username: String,
+    userEmails: [String] // a doctor can be linked to many users, or none at all
+})
+const doctorModel = mongoose.model('doctors', doctorSchema);
 
-        // the database itself (Walkerone)
-        const db = client.db('sample_mflix');
+const routeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    distance: Number,
+    caloriesBurned: Number,
+    elevationGain: Number,
+    stepCount: Number,
+    waypoint: [String],
+    // assuming heartrate isnt getting tracked, and is shown to the user at start time
+    email: { type: String, required: true } // link a route to a user
+})
+const routeModel = mongoose.model('routes', routeSchema);
 
-        // the table you want to query (users, routes)
-        const collection = db.collection('movies');
+const taskSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: String,
+    creator: { type: String, required: true },
+    assignedTo: { type: String, required: true } // link a task to a user
+})
+const taskModel = mongoose.model('tasks', taskSchema);
 
-        // get the first value 
-        const first = await collection.findOne();
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    username: String,
+    bio: String,
+    pfp: String,  //PLACEHOLDER
 
-        console.log(first);
+    restingHR: Number, // pull this from user on first start
+    // query database each time biomarkers are viewed, to see steps and calories burnt from walks which happened that day
+    caloriesBurnt: Number,
+    stepCount: Number,
 
-    } finally {
-        await client.close();
-    }
-}
+    friends: [{ type: String }], // a user may have many friends, or none at all
+})
+const userModel = mongoose.model('users', userSchema);
 
-// basic stuff for adding a user
-async function addUser(data) {
-
-    try {
-        await client.connect();
-        const db = client.db('Walkerone');
-        const users = db.collection('users');
-
-        const doc = { name: "foo fighter", email: "foofighters@music.com" };
-        const result = await users.insertOne(doc);
-        console.log(
-            `A document was inserted with the _id: ${result.insertedId}`,
-        );
-    
-    } finally {
-
-    } await client.close()
-}
+//example to see all doctors
+app.get("/getDoctors", async (req, res) => {
+    const doctorData = await doctorModel.find();
+    res.json(doctorData);
+});
 
 
 
-await connect();
-app.listen(PORT, () => console.log(`Server started on ${PORT}`));
-//addUser().catch(console.error)
+
+
