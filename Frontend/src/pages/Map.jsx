@@ -4,15 +4,16 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN; // Get mapbox token from .env file (use public key later)
 
-export default function Map() {
+export default function Map({ setIsRecording }) {
   const mapRef = useRef()
   const mapContainerRef = useRef()
   const [error, setError] = useState(null) // State for storing errors
   const [coordinates, setCoordinates] = useState([])
-  const [isRecording, setIsRecording] = useState(false)
+  const [isRecording, setIsRecordingLocal] = useState(false)
   const [userLocation, setUserLocation] = useState(null) // State for user location, initially set to null
   const watchIdRef = useRef(null) // Reference for GPS tracking session ID
 
+  // Setup the map
   useEffect(() => {
     // Check for mapbox browser support
     if (!mapboxgl.supported()) {
@@ -106,6 +107,29 @@ export default function Map() {
     }
   }, [coordinates]) // Run whenever coordinates updates
 
+  // Call start recording function when singal recieved from bottom nav
+  useEffect(() => {
+      const handleStart = () => {
+        if (!isRecording) {
+          startRecording();
+        }
+      };
+
+      const handleStop = () => {
+        if (isRecording) {
+          stopRecording();
+        }
+      };
+
+      window.addEventListener('startRecording', handleStart); // Listen for start signal from bottom nav
+      window.addEventListener('stopRecording', handleStop); // Listen for stop signal from bottom nav
+      
+      return () => {
+        window.removeEventListener('startRecording', handleStart);
+        window.removeEventListener('stopRecording', handleStop);
+      };
+    }, [isRecording]);
+
   // Start recording a route
   const startRecording = () => {
     if (!navigator.geolocation) { // Check that geolocation is supported by the briwser
@@ -113,7 +137,8 @@ export default function Map() {
       return;
     }
 
-    setIsRecording(true); // Update route recording state
+    setIsRecordingLocal(true); // Update route recording state
+    setIsRecording(true); // Update parent state
     setCoordinates([]) // Clear previous route data
 
     watchIdRef.current = navigator.geolocation.watchPosition( // Every time the user's GPS location updates
@@ -149,7 +174,8 @@ export default function Map() {
       navigator.geolocation.clearWatch(watchIdRef.current) // Stop tracking GPS from the browser
       watchIdRef.current = null // Clear current GPS tracking session ID, now that it's over
     }
-    setIsRecording(false)
+    setIsRecordingLocal(false); // Update local state
+    setIsRecording(false); // Update parent state
     
     if (coordinates.length > 0) {
       const route = {
