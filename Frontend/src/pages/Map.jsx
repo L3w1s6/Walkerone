@@ -30,7 +30,7 @@ export default function Map({ setIsRecording }) {
     navigator.geolocation.getCurrentPosition( // Get current GPS position from browser
       (position) => {
         const { latitude, longitude } = position.coords // Split GPS position into latitude and longitude (needed for updating location on mapbox)
-        setUserLocation({ lat: latitude, lng: longitude }) // Save user's current location
+        setUserLocation({ lat: latitude, long: longitude }) // Save user's current location
 
         if (!mapRef.current) { // Create a map if one doesn't already exist
           mapRef.current = new mapboxgl.Map({
@@ -101,7 +101,7 @@ export default function Map({ setIsRecording }) {
         type: 'Feature',
         geometry: {
           type: 'LineString',
-          coordinates: coordinates.map(coord => [coord.lng, coord.lat]) // Map each coordinate in the coordinates array into mapbox format
+          coordinates: coordinates.map(coord => [coord.long, coord.lat]) // Map each coordinate in the coordinates array into mapbox format
         }
       })
     }
@@ -130,6 +130,30 @@ export default function Map({ setIsRecording }) {
       };
     }, [isRecording]);
 
+  // Simulate movement for testing
+  const simulateMovement = (direction) => {
+    if (!userLocation) return
+
+    const step = 0.0001 // Step distance (change for bigger/smaller steps)
+    let newLat = userLocation.lat
+    let newlong = userLocation.long
+
+    if (direction === 'north') newLat += step
+    if (direction === 'south') newLat -= step
+    if (direction === 'east') newlong += step
+    if (direction === 'west') newlong -= step
+
+    setUserLocation({ lat: newLat, long: newlong })
+    
+    setCoordinates(prev => 
+      [...prev, { lat: newLat, long: newlong, timestamp: Date.now() }] // Append new coordinates onto the end of coordinate array
+    )
+
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 }) // Update map with new coordinates as center
+    }
+  }
+
   // Start recording a route
   const startRecording = () => {
     if (!navigator.geolocation) { // Check that geolocation is supported by the briwser
@@ -144,10 +168,10 @@ export default function Map({ setIsRecording }) {
     watchIdRef.current = navigator.geolocation.watchPosition( // Every time the user's GPS location updates
       (position) => {
         const { latitude, longitude } = position.coords
-        setUserLocation({ lat: latitude, lng: longitude }) // Update user location
+        setUserLocation({ lat: latitude, long: longitude }) // Update user location
         
         setCoordinates(prev => 
-          [...prev, { lat: latitude, lng: longitude, timestamp: Date.now() }] // Append new location coordinates onto the end of the coordinates array
+          [...prev, { lat: latitude, long: longitude, timestamp: Date.now() }] // Append new location coordinates onto the end of the coordinates array
         )
 
         if (mapRef.current) {
@@ -211,6 +235,16 @@ export default function Map({ setIsRecording }) {
           <p>Points: {coordinates.length}</p>
         </div>
       )}
+
+      {/* Test Movement Buttons */}
+      <div style={{ position: 'absolute', bottom: '100px', left: '20px' }}>
+        <button onClick={() => simulateMovement('north')}>↑</button>
+        <br/>
+        <button onClick={() => simulateMovement('west')}>←</button>
+        <button onClick={() => simulateMovement('east')}>→</button>
+        <br/>
+        <button onClick={() => simulateMovement('south')}>↓</button>
+      </div>
     </div>
   )
 }
