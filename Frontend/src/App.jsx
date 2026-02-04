@@ -1,4 +1,6 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import { useState } from 'react'
+
 import MobileBody from './components/MobileBody'
 import TopNav from './components/TopNav'
 import BottomNav from './components/BottomNav'
@@ -7,9 +9,11 @@ import Login from './pages/Login'
 import Map from './pages/Map'
 import Stats from './pages/Stats'
 import Tasks from './pages/Tasks'
-import Routes2 from './pages/Routes'
+import RoutesPage from './pages/Routes'
 
 export default function App() {
+  const [isRecording, setIsRecording] = useState(false) // State for checking if a route is currently recording
+
   return (
     <BrowserRouter>
       <MobileBody>
@@ -21,14 +25,14 @@ export default function App() {
               <div className="flex-1 h-100 overflow-y-auto bg-white">
                 <Routes>
                   <Route path="/account" element={<Account/>}/>
-                  <Route path="/map" element={<Map/>}/>
-                  <Route path="/routes2" element={<Routes2/>}/>
+                  <Route path="/map" element={<Map setIsRecording={setIsRecording}/>}/>
+                  <Route path="/routes" element={<RoutesPage/>}/>
                   <Route path="/stats" element={<Stats/>}/>
                   <Route path="/tasks" element={<Tasks/>}/>
                   <Route path="*" element={<div><p>Unknown path</p></div>}/>
                 </Routes>
               </div>
-              <BottomNav/>
+              <BottomNav isRecording={isRecording}/>
             </div>
           }/>
         </Routes>
