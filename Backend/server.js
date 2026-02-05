@@ -46,6 +46,7 @@ import dotenv from "dotenv";
 // i hate it.
 
 const app = express();
+app.use(express.json());
 dotenv.config();
 
 const URI = process.env.URI
@@ -111,7 +112,24 @@ app.get("/getDoctors", async (req, res) => {
     res.json(doctorData);
 });
 
+// add a new route
+app.post("/addRoute", async (req, res) => {
+    const newRoute = new routeModel(req.body);
+    await newRoute.save();
+    res.json(newRoute)
+});
 
+// Delete a route with the provided ID
+app.delete("/deleteRoute/:id", async (req, res) => {
+    const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);
+    if (!deletedRoute) {
+        res.json({message: "Route not found, no route has been deleted"});
+    }
+    res.json(deletedRoute);
+});
 
-
-
+// Find a router by searching the email of the user
+app.get("/showRoutesByUser/:email", async (req, res) => {
+    const routes = await routeModel.find({ email: req.params.email });
+    res.json(routes);
+});
