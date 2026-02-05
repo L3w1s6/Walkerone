@@ -23,12 +23,16 @@ npm install
 ## Running
 
 ### Frontend
+
 Locally on this machine:
+
 ```bash
 cd Frontend
 npm run dev
 ```
+
 or also on local network:
+
 ```bash
 cd Frontend
 npm run dev -- --host

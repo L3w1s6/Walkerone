@@ -4,14 +4,12 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN; // Get mapbox token from .env file (use public key later)
 
-export default function Map({ setIsRecording }) {
+export default function Map({ isRecording, setIsRecording, coordinates, setCoordinates, watchIdRef }) {
   const mapRef = useRef()
   const mapContainerRef = useRef()
   const [error, setError] = useState(null) // State for storing errors
-  const [coordinates, setCoordinates] = useState([])
-  const [isRecording, setIsRecordingLocal] = useState(false)
   const [userLocation, setUserLocation] = useState(null) // State for user location, initially set to null
-  const watchIdRef = useRef(null) // Reference for GPS tracking session ID
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   // Setup the map
   useEffect(() => {
@@ -32,7 +30,7 @@ export default function Map({ setIsRecording }) {
         const { latitude, longitude } = position.coords // Split GPS position into latitude and longitude (needed for updating location on mapbox)
         setUserLocation({ lat: latitude, long: longitude }) // Save user's current location
 
-        if (!mapRef.current) { // Create a map if one doesn't already exist
+        if (!mapRef.current || !mapRef.current.getContainer()) { // Create a map if one doesn't already exist
           mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current, 
             center: [longitude, latitude], // Center map on the user's current location
@@ -45,7 +43,10 @@ export default function Map({ setIsRecording }) {
             setError("Failed to load map, internal error: " + e.message)
           })
 
+          
+
           mapRef.current.on('load', () => { // Wait for map to load
+            setMapLoaded(true);
             mapRef.current.addSource('route', { // Add route data source to the map
               type: 'geojson',
               data: {
@@ -71,6 +72,17 @@ export default function Map({ setIsRecording }) {
                 'line-width': 8 // Default line thickness from docs
               }
             })
+
+            // Display blue circle around user location
+            const geolocate = new mapboxgl.GeolocateControl({
+              trackUserLocation: true,
+              showUserLocation: true,
+              showButton: false
+            });
+            mapRef.current.addControl(geolocate);
+            setTimeout(() => {
+              geolocate.trigger() // Automatically show dot without needing the user to trigger it (wait 500ms for map to load first)
+            }, 500)
           })
         }
       },
@@ -82,21 +94,23 @@ export default function Map({ setIsRecording }) {
       },
       {
         enableHighAccuracy: true, // Use GPS locations, instead of cell towers so that routes are more accurate
-        timeout: 5000, // Timeout after 5 seconds of trying to get location
-        maximumAge: 0 // Only use new coordinates
+        timeout: 30000, // Timeout after 30 seconds of trying to get location
+        maximumAge: 500 // Only use new coordinates (max 500 ms old)
       }
     )
 
     return () => {
       if (mapRef.current) {
         mapRef.current.remove() // Prevent map duplication
+        mapRef.current = null
+        setMapLoaded(false)
       }
     }
   }, [])
 
   // Update coordinates on the map
   useEffect(() => {
-    if (mapRef.current && mapRef.current.getSource('route') && coordinates.length > 0) { // If map exists and a route has been started
+    if (mapRef.current && mapLoaded && mapRef.current.getSource('route') && coordinates.length > 0) { // If map exists and a route has been started
       mapRef.current.getSource('route').setData({
         type: 'Feature',
         geometry: {
@@ -104,8 +118,17 @@ export default function Map({ setIsRecording }) {
           coordinates: coordinates.map(coord => [coord.long, coord.lat]) // Map each coordinate in the coordinates array into mapbox format
         }
       })
-    }
-  }, [coordinates]) // Run whenever coordinates updates
+    } else if (mapRef.current && mapRef.current.getSource('route') && !isRecording) {
+    // Clear the line when not recording
+    mapRef.current.getSource('route').setData({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: []
+      }
+    })
+  }
+  }, [coordinates, isRecording]) // Run whenever coordinates updates
 
   // Call start recording function when singal recieved from bottom nav
   useEffect(() => {
@@ -161,7 +184,6 @@ export default function Map({ setIsRecording }) {
       return;
     }
 
-    setIsRecordingLocal(true); // Update route recording state
     setIsRecording(true); // Update parent state
     setCoordinates([]) // Clear previous route data
 
@@ -186,8 +208,8 @@ export default function Map({ setIsRecording }) {
       },
       {
         enableHighAccuracy: true, // Use GPS locations, instead of cell towers so that routes are more accurate
-        timeout: 5000, // Timeout after 5 seconds of trying to get location
-        maximumAge: 0 // Only use new coordinates
+        timeout: 30000, // Timeout after 30 seconds of trying to get location
+        maximumAge: 500 // Only use new coordinates (max 500ms old)
       }
     )
   }
@@ -198,7 +220,6 @@ export default function Map({ setIsRecording }) {
       navigator.geolocation.clearWatch(watchIdRef.current) // Stop tracking GPS from the browser
       watchIdRef.current = null // Clear current GPS tracking session ID, now that it's over
     }
-    setIsRecordingLocal(false); // Update local state
     setIsRecording(false); // Update parent state
     
     if (coordinates.length > 0) {
@@ -214,8 +235,8 @@ export default function Map({ setIsRecording }) {
       
       console.log('Route saved:', route)
     }
+    setCoordinates([]) // Clear route data/line on map
   }
-
 
   // Display <p> if error exists
   if (error) {

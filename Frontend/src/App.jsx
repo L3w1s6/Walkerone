@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 import MobileBody from './components/MobileBody'
 import TopNav from './components/TopNav'
@@ -13,6 +13,8 @@ import RoutesPage from './pages/Routes'
 
 export default function App() {
   const [isRecording, setIsRecording] = useState(false) // State for checking if a route is currently recording
+  const [coordinates, setCoordinates] = useState([]) // State of recorded coordinates on a route
+  const watchIdRef = useRef(null) // Reference for GPS tracking session ID
 
   return (
     <BrowserRouter>
@@ -25,7 +27,7 @@ export default function App() {
               <div className="flex-1 h-100 overflow-y-auto bg-white">
                 <Routes>
                   <Route path="/account" element={<Account/>}/>
-                  <Route path="/map" element={<Map setIsRecording={setIsRecording}/>}/>
+                  <Route path="/map" element={<Map isRecording={isRecording} setIsRecording={setIsRecording} coordinates={coordinates} setCoordinates={setCoordinates} watchIdRef={watchIdRef}/>}/>
                   <Route path="/routes" element={<RoutesPage/>}/>
                   <Route path="/stats" element={<Stats/>}/>
                   <Route path="/tasks" element={<Tasks/>}/>
