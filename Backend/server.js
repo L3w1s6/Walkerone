@@ -76,8 +76,15 @@ const routeSchema = new mongoose.Schema({
     caloriesBurned: Number,
     elevationGain: Number,
     stepCount: Number,
-    waypoint: [String],
-    // assuming heartrate isnt getting tracked, and is shown to the user at start time
+    startTime: String,
+    endTime: String,
+    coordinates: [
+        {
+            lat: any,
+            long: any,
+            timestamp: any
+        }
+    ],
     email: { type: String, required: true } // link a route to a user
 })
 const routeModel = mongoose.model('routes', routeSchema);
@@ -114,8 +121,21 @@ app.get("/getDoctors", async (req, res) => {
 
 // add a new route
 app.post("/addRoute", async (req, res) => {
-    const newRoute = new routeModel(req.body);
-    await newRoute.save();
+    const {id, coordinates, startTime, endTime} = req.body;
+    const route = new routeModel(
+        {
+            _id: id,
+            distance: 0, //PLACEHOLDER
+            caloriesBurned: 0, //PLACEHOLDER
+            elevationGain: 0, //PLACEHOLDER
+            stepCount: 0, //PLACEHOLDER
+            startTime: String,
+            endTime: String,
+            coordinates: coordinates,
+            email: "garrytheprophet@gmail.com" //PLACEHOLDER
+        }
+    )
+    await route.save();
     res.json(newRoute)
 });
 
