@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 
 // things which need to be modelled
 
@@ -47,6 +48,7 @@ import dotenv from "dotenv";
 
 const app = express();
 app.use(express.json());
+app.use(cors())
 dotenv.config();
 
 const URI = process.env.URI
@@ -80,9 +82,9 @@ const routeSchema = new mongoose.Schema({
     endTime: String,
     coordinates: [
         {
-            lat: any,
-            long: any,
-            timestamp: any
+            lat: Number,
+            long: Number,
+            timestamp: Date
         }
     ],
     email: { type: String, required: true } // link a route to a user
@@ -153,3 +155,7 @@ app.get("/showRoutesByUser/:email", async (req, res) => {
     const routes = await routeModel.find({ email: req.params.email });
     res.json(routes);
 });
+
+app.get('/test/', function (req, res, next) {
+  res.json({msg: 'Hello'})
+})

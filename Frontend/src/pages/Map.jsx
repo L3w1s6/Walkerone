@@ -1,4 +1,4 @@
-import {useRef, useEffect, useState} from 'react'
+import { useRef, useEffect, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -32,7 +32,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
         if (!mapRef.current || !mapRef.current.getContainer()) { // Create a map if one doesn't already exist
           mapRef.current = new mapboxgl.Map({
-            container: mapContainerRef.current, 
+            container: mapContainerRef.current,
             center: [longitude, latitude], // Center map on the user's current location
             zoom: 15
           })
@@ -43,7 +43,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
             setError("Failed to load map, internal error: " + e.message)
           })
 
-          
+
 
           mapRef.current.on('load', () => { // Wait for map to load
             setMapLoaded(true);
@@ -119,39 +119,46 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         }
       })
     } else if (mapRef.current && mapRef.current.getSource('route') && !isRecording) {
-    // Clear the line when not recording
-    mapRef.current.getSource('route').setData({
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: []
-      }
-    })
-  }
+      // Clear the line when not recording
+      mapRef.current.getSource('route').setData({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: []
+        }
+      })
+    }
   }, [coordinates, isRecording]) // Run whenever coordinates updates
 
   // Call start recording function when singal recieved from bottom nav
   useEffect(() => {
-      const handleStart = () => {
-        if (!isRecording) {
-          startRecording();
-        }
-      };
+    const handleStart = () => {
+      if (!isRecording) {
+        startRecording();
 
-      const handleStop = () => {
-        if (isRecording) {
-          stopRecording();
-        }
-      };
+        // testing purposes here!
+        alert("now recording");
 
-      window.addEventListener('startRecording', handleStart); // Listen for start signal from bottom nav
-      window.addEventListener('stopRecording', handleStop); // Listen for stop signal from bottom nav
-      
-      return () => {
-        window.removeEventListener('startRecording', handleStart);
-        window.removeEventListener('stopRecording', handleStop);
-      };
-    }, [isRecording]);
+
+
+
+      }
+    };
+
+    const handleStop = () => {
+      if (isRecording) {
+        stopRecording();
+      }
+    };
+
+    window.addEventListener('startRecording', handleStart); // Listen for start signal from bottom nav
+    window.addEventListener('stopRecording', handleStop); // Listen for stop signal from bottom nav
+
+    return () => {
+      window.removeEventListener('startRecording', handleStart);
+      window.removeEventListener('stopRecording', handleStop);
+    };
+  }, [isRecording]);
 
   // Simulate movement for testing
   const simulateMovement = (direction) => {
@@ -167,8 +174,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     if (direction === 'west') newlong -= step
 
     setUserLocation({ lat: newLat, long: newlong })
-    
-    setCoordinates(prev => 
+
+    setCoordinates(prev =>
       [...prev, { lat: newLat, long: newlong, timestamp: Date.now() }] // Append new coordinates onto the end of coordinate array
     )
 
@@ -191,8 +198,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       (position) => {
         const { latitude, longitude } = position.coords
         setUserLocation({ lat: latitude, long: longitude }) // Update user location
-        
-        setCoordinates(prev => 
+
+        setCoordinates(prev =>
           [...prev, { lat: latitude, long: longitude, timestamp: Date.now() }] // Append new location coordinates onto the end of the coordinates array
         )
 
@@ -204,7 +211,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       // Catch geolocation errors
       (error) => {
         console.error("Geolocation error:", error)
-                setError("Failed to get location: " + error.message)
+        setError("Failed to get location: " + error.message)
       },
       {
         enableHighAccuracy: true, // Use GPS locations, instead of cell towers so that routes are more accurate
@@ -216,12 +223,12 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
   // Stop recording a route
   const stopRecording = () => {
-    if (watchIdRef.current) { 
+    if (watchIdRef.current) {
       navigator.geolocation.clearWatch(watchIdRef.current) // Stop tracking GPS from the browser
       watchIdRef.current = null // Clear current GPS tracking session ID, now that it's over
     }
     setIsRecording(false); // Update parent state
-    
+
     if (coordinates.length > 0) {
       const route = {
         id: Date.now(),
@@ -229,11 +236,13 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         startTime: new Date(coordinates[0].timestamp).toISOString(),
         endTime: new Date(coordinates[coordinates.length - 1].timestamp).toISOString()
       }
-      
+
       const savedRoutes = JSON.parse(localStorage.getItem('routes') || '[]')
       localStorage.setItem('routes', JSON.stringify([...savedRoutes, route])) // Save route to localStorage, backup in case connection drops between frontend and backend
-      
-      console.log('Route saved:', route)
+
+      console.log('Route saved:', route);
+      // testing
+      alert(JSON.stringify(route, null, 3));
     }
     setCoordinates([]) // Clear route data/line on map
   }
@@ -247,11 +256,11 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-      <div id='map-container' ref={mapContainerRef} style={{height: '100%', width: '100%'}}/>
+      <div id='map-container' ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
 
       {/* Route Stats */}
       {isRecording && (
-        <div style={{ position: 'absolute', top: '20px', right: '20px',}}>
+        <div style={{ position: 'absolute', top: '20px', right: '20px', }}>
           <p>Recording...</p>
           <p>Points: {coordinates.length}</p>
         </div>
@@ -260,10 +269,10 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       {/* Test Movement Buttons */}
       <div style={{ position: 'absolute', bottom: '100px', left: '20px' }}>
         <button onClick={() => simulateMovement('north')}>↑</button>
-        <br/>
+        <br />
         <button onClick={() => simulateMovement('west')}>←</button>
         <button onClick={() => simulateMovement('east')}>→</button>
-        <br/>
+        <br />
         <button onClick={() => simulateMovement('south')}>↓</button>
       </div>
     </div>
