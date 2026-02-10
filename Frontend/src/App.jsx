@@ -28,7 +28,7 @@ export default function App() {
                 <Routes>
                   <Route path="/account" element={<Account/>}/>
                   <Route path="/map" element={<Map isRecording={isRecording} setIsRecording={setIsRecording} coordinates={coordinates} setCoordinates={setCoordinates} watchIdRef={watchIdRef}/>}/>
-                  <Route path="/routes" element={<RoutesPage/>}/>
+                  <Route path="/routes2" element={<RoutesPage/>}/>
                   <Route path="/stats" element={<Stats/>}/>
                   <Route path="/tasks" element={<Tasks/>}/>
                   <Route path="*" element={<div><p>Unknown path</p></div>}/>
