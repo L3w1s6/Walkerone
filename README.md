@@ -6,15 +6,20 @@ itll  be very good truss
 
 ## Installing
 
-### Install Frontend
-
+### Frontend
+Open a terminal in the directory then use the following commands.
 ```bash
 cd Frontend
 npm install
 ```
 
-### Install Backend
+Create a `.env` file in `Frontend` folder containing the following, replacing `<token>` with your MapBoxGL token.
+```
+VITE_MAPBOX_TOKEN=<token>
+```
 
+### Backend
+Open a terminal in the directory then use the following commands.
 ```bash
 cd Backend
 npm install
