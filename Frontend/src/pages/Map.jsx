@@ -162,7 +162,13 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
   // Simulate movement for testing
   const simulateMovement = (direction) => {
-    if (!userLocation) return
+    console.log('isRecording:', isRecording);
+    console.log('userLocation:', userLocation);
+    
+    if (!userLocation) {
+      console.log('No user location, returning');
+      return;
+    }
 
     const step = 0.0001 // Step distance (change for bigger/smaller steps)
     let newLat = userLocation.lat
@@ -229,22 +235,26 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     }
     setIsRecording(false); // Update parent state
 
-    if (coordinates.length > 0) {
-      const route = {
-        id: Date.now(),
-        coordinates,
-        startTime: new Date(coordinates[0].timestamp).toISOString(),
-        endTime: new Date(coordinates[coordinates.length - 1].timestamp).toISOString()
+    // Use functional setState to get current coordinates value
+    setCoordinates(currentCoords => {
+      if (currentCoords.length > 0) {
+        const route = {
+          id: Date.now(),
+          coordinates: currentCoords,
+          startTime: new Date(currentCoords[0].timestamp).toISOString(),
+          endTime: new Date(currentCoords[currentCoords.length - 1].timestamp).toISOString()
+        }
+
+        const savedRoutes = JSON.parse(localStorage.getItem('routes') || '[]')
+        localStorage.setItem('routes', JSON.stringify([...savedRoutes, route])) // Save route to localStorage, backup in case connection drops between frontend and backend
+
+        console.log('Route saved:', route);
+        // testing
+        alert(JSON.stringify(route, null, 3));
       }
-
-      const savedRoutes = JSON.parse(localStorage.getItem('routes') || '[]')
-      localStorage.setItem('routes', JSON.stringify([...savedRoutes, route])) // Save route to localStorage, backup in case connection drops between frontend and backend
-
-      console.log('Route saved:', route);
-      // testing
-      alert(JSON.stringify(route, null, 3));
-    }
-    setCoordinates([]) // Clear route data/line on map
+      
+      return []; // Clear route data/line on map
+    });
   }
 
   // Display <p> if error exists
