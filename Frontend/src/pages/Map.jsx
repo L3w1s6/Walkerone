@@ -11,8 +11,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const [userLocation, setUserLocation] = useState(null) // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false)
 
+  // testing backend flow
   async function testFlow() {
-    try{
+    try {
       const res = await fetch('http://localhost:8000/test')
       const data = await res.json()
       alert(data.msg);
@@ -22,6 +23,25 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     }
   }
 
+  async function addRoute(routeData) {
+    try {
+      const res = await fetch('http://localhost:8000/addRoute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(routeData)
+      })
+
+      alert
+      if (!res.ok){
+        return false
+      }
+
+      const resData = await res.json()
+      return true
+    } catch (err) {
+      return false
+    }
+  }
   // Setup the map
   useEffect(() => {
     // Check for mapbox browser support
@@ -175,7 +195,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const simulateMovement = (direction) => {
     console.log('isRecording:', isRecording);
     console.log('userLocation:', userLocation);
-    
+
     if (!userLocation) {
       console.log('No user location, returning');
       return;
@@ -262,9 +282,18 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         console.log('Route saved:', route);
         // testing
         alert(JSON.stringify(route, null, 3));
-        testFlow()
+
+        addRoute(route).then((ok) => {
+          if (ok) {
+            alert("data added")
+          } else {
+            alert ("data not added")
+          }
+
+        })
+
       }
-      
+
       return []; // Clear route data/line on map
     });
   }

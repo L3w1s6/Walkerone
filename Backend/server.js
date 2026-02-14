@@ -73,7 +73,7 @@ const doctorSchema = new mongoose.Schema({
 const doctorModel = mongoose.model('doctors', doctorSchema);
 
 const routeSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, default: "default"},
     distance: Number,
     caloriesBurned: Number,
     elevationGain: Number,
@@ -126,19 +126,20 @@ app.post("/addRoute", async (req, res) => {
     const {id, coordinates, startTime, endTime} = req.body;
     const route = new routeModel(
         {
-            _id: id,
+            // something weird with mongo means you dont need to define the id itself
+            name: "a route",
             distance: 0, //PLACEHOLDER
             caloriesBurned: 0, //PLACEHOLDER
             elevationGain: 0, //PLACEHOLDER
             stepCount: 0, //PLACEHOLDER
-            startTime: String,
-            endTime: String,
+            startTime: startTime,
+            endTime: endTime,
             coordinates: coordinates,
             email: "garrytheprophet@gmail.com" //PLACEHOLDER
         }
     )
     await route.save();
-    res.json(newRoute)
+    res.json(route)
 });
 
 // Delete a route with the provided ID
