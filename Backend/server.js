@@ -156,6 +156,6 @@ app.get("/showRoutesByUser/:email", async (req, res) => {
     res.json(routes);
 });
 
-app.get('/test/', function (req, res, next) {
-  res.json({msg: 'Hello'})
+app.get('/test', function (req, res, next) {
+  res.json({msg: 'Hello from backend'})
 })

@@ -11,6 +11,17 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const [userLocation, setUserLocation] = useState(null) // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false)
 
+  async function testFlow() {
+    try{
+      const res = await fetch('http://localhost:8000/test')
+      const data = await res.json()
+      alert(data.msg);
+    } catch (err) {
+      console.log(err)
+      alert("couldnt reach backend")
+    }
+  }
+
   // Setup the map
   useEffect(() => {
     // Check for mapbox browser support
@@ -251,6 +262,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         console.log('Route saved:', route);
         // testing
         alert(JSON.stringify(route, null, 3));
+        testFlow()
       }
       
       return []; // Clear route data/line on map
