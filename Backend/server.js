@@ -35,12 +35,12 @@ import cors from "cors";
 
 // add users (C)
 // edit user information (U)
-// delete user information (D)
+// delete user (D)
 // add user as friend? (U)
-// view user info (R)
-// view user tasks (R)
-// add routes (C)
-// view routes (R)
+// view user info (R)       done
+// view user tasks (R)      
+// add routes (C)       done
+// view routes (R)      done
 // delete routes (D)
 
 // mongodb is in fact, a piece of crud
@@ -73,7 +73,7 @@ const doctorSchema = new mongoose.Schema({
 const doctorModel = mongoose.model('doctors', doctorSchema);
 
 const routeSchema = new mongoose.Schema({
-    name: { type: String, required: true, default: "default"},
+    name: { type: String, required: true, default: "default" },
     distance: Number,
     caloriesBurned: Number,
     elevationGain: Number,
@@ -87,7 +87,7 @@ const routeSchema = new mongoose.Schema({
             timestamp: Date
         }
     ],
-    email: { type: String, required: true } // link a route to a user
+    username: { type: String, required: true } // link a route to a user
 })
 const routeModel = mongoose.model('routes', routeSchema);
 
@@ -95,7 +95,8 @@ const taskSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: String,
     creator: { type: String, required: true },
-    assignedTo: { type: String, required: true } // link a task to a user
+    assignedTo: { type: String, required: true }, // link a task to a user
+    complete: Boolean
 })
 const taskModel = mongoose.model('tasks', taskSchema);
 
@@ -105,11 +106,11 @@ const userSchema = new mongoose.Schema({
     username: String,
     bio: String,
     pfp: String,  //PLACEHOLDER
-
     restingHR: Number, // pull this from user on first start
-    // query database each time biomarkers are viewed, to see steps and calories burnt from walks which happened that day
-    caloriesBurnt: Number,
-    stepCount: Number,
+
+    // from what i can tell if these are only associated with routes, not much reason to put them here unless something changes
+    //caloriesBurnt: Number,
+    //stepCount: Number,
 
     friends: [{ type: String }], // a user may have many friends, or none at all
 })
@@ -121,9 +122,35 @@ app.get("/getDoctors", async (req, res) => {
     res.json(doctorData);
 });
 
+// get user data by name
+// hmm, if profile sharing is implemented, only select fields should be returned when querying users which arent your own
+app.get("/getUserData", async (req, res) => {
+
+    // uncomment this in actual use
+    //const {searchName} = req.body
+    const searchName = "johnny silverhand" // PLACEHOLDER
+    console.log(searchName)
+
+    // test version
+    const userData = await userModel.find({username: searchName});
+    res.json(userData);
+});
+
+app.get("/getRoutes", async (req, res) => {
+
+    // uncomment this in actual use
+    //const {searchName} = req.body
+    const searchName = "garrytheprophet" // PLACEHOLDER
+    console.log(searchName)
+
+    // test version
+    const userData = await routeModel.find({username: searchName});
+    res.json(userData);
+});
+
 // add a new route
 app.post("/addRoute", async (req, res) => {
-    const {id, coordinates, startTime, endTime} = req.body;
+    const { id, coordinates, startTime, endTime } = req.body;
     const route = new routeModel(
         {
             // something weird with mongo means you dont need to define the id itself
@@ -135,22 +162,25 @@ app.post("/addRoute", async (req, res) => {
             startTime: startTime,
             endTime: endTime,
             coordinates: coordinates,
-            email: "garrytheprophet@gmail.com" //PLACEHOLDER
+            username: "garrytheprophet" //PLACEHOLDER
         }
     )
     await route.save();
     res.json(route)
 });
 
+
+
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
     const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);
     if (!deletedRoute) {
-        res.json({message: "Route not found, no route has been deleted"});
+        res.json({ message: "Route not found, no route has been deleted" });
     }
     res.json(deletedRoute);
 });
 
+// decided
 // Find a router by searching the email of the user
 app.get("/showRoutesByUser/:email", async (req, res) => {
     const routes = await routeModel.find({ email: req.params.email });
@@ -158,5 +188,6 @@ app.get("/showRoutesByUser/:email", async (req, res) => {
 });
 
 app.get('/test', function (req, res, next) {
-  res.json({msg: 'Hello from backend'})
+    res.json({ msg: 'Hello from backend' })
 })
+

@@ -30,13 +30,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(routeData)
       })
-
-      alert
       if (!res.ok){
         return false
       }
-
-      const resData = await res.json()
       return true
     } catch (err) {
       return false
@@ -283,6 +279,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         // testing
         alert(JSON.stringify(route, null, 3));
 
+        //
+
         addRoute(route).then((ok) => {
           if (ok) {
             alert("data added")
@@ -290,8 +288,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
             alert ("data not added")
           }
 
-        })
-
+        });
       }
 
       return []; // Clear route data/line on map
