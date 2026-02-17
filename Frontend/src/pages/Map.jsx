@@ -40,84 +40,107 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   }
   // Setup the map
   useEffect(() => {
+    // Skip if map already exists (component stays mounted)
+    if (mapRef.current) {
+      return
+    }
+
     // Check for mapbox browser support
     if (!mapboxgl.supported()) {
       setError("Browser doesn't support Mapbox GL")
       return
     }
 
+    let geolocationCancelled = false // Track if geolocation should be ignored
+
+    const initializeMap = (latitude, longitude) => {
+      if (geolocationCancelled) return
+      if (mapRef.current) return
+      
+      mapRef.current = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        center: [longitude, latitude], // Center map on the user's current location
+        zoom: 15
+      })
+
+      // Listen for any erros from mapbox
+      mapRef.current.on("error", (e) => {
+        console.error("Map internal error: ", e)
+        setError("Failed to load map, internal error: " + e.message)
+      })
+
+      mapRef.current.on('load', () => { // Wait for map to load
+        setMapLoaded(true);
+        mapRef.current.addSource('route', { // Add route data source to the map
+          type: 'geojson',
+          data: {
+            type: 'Feature', // Geospatial feature
+            geometry: {
+              type: 'LineString', // Line connecting multiple GPS points
+              coordinates: [] // Empty intially, potentially fill in the future if resuming routes etc
+            }
+          }
+        })
+
+        // Add a layer on top of the map that displays the coordinates from the route data source
+        mapRef.current.addLayer({
+          id: 'route',
+          type: 'line', // Draw route as a line
+          source: 'route',
+          layout: {
+            'line-join': 'round', // Join corners smoothly
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#888', // Default colour from docs, change later and maybe add multiple options
+            'line-width': 8 // Default line thickness from docs
+          }
+        })
+
+        // Display blue circle around user location
+        const geolocate = new mapboxgl.GeolocateControl({
+          trackUserLocation: true,
+          showUserLocation: true,
+          showButton: false
+        });
+        mapRef.current.addControl(geolocate);
+        setTimeout(() => {
+          geolocate.trigger() // Automatically show dot without needing the user to trigger it (wait 500ms for map to load first)
+        }, 500)
+      })
+    }
+
+    // If already recording, use last coordinate or default location
+    if (isRecording && coordinates.length > 0) {
+      const lastCoord = coordinates[coordinates.length - 1]
+      setUserLocation({ lat: lastCoord.lat, long: lastCoord.long })
+      initializeMap(lastCoord.lat, lastCoord.long)
+      return
+    }
+
     // Check for geolocation browser support
     if (!navigator.geolocation) {
       setError("Geolocation not supported by browser")
+      // Use default location
+      initializeMap(51.5074, -0.1278)
       return
     }
 
     navigator.geolocation.getCurrentPosition( // Get current GPS position from browser
       (position) => {
+        if (geolocationCancelled) return // Ignore if effect cleanup ran
+        
         const { latitude, longitude } = position.coords // Split GPS position into latitude and longitude (needed for updating location on mapbox)
         setUserLocation({ lat: latitude, long: longitude }) // Save user's current location
-
-        if (!mapRef.current || !mapRef.current.getContainer()) { // Create a map if one doesn't already exist
-          mapRef.current = new mapboxgl.Map({
-            container: mapContainerRef.current,
-            center: [longitude, latitude], // Center map on the user's current location
-            zoom: 15
-          })
-
-          // Listen for any erros from mapbox
-          mapRef.current.on("error", (e) => {
-            console.error("Map internal error: ", e)
-            setError("Failed to load map, internal error: " + e.message)
-          })
-
-
-
-          mapRef.current.on('load', () => { // Wait for map to load
-            setMapLoaded(true);
-            mapRef.current.addSource('route', { // Add route data source to the map
-              type: 'geojson',
-              data: {
-                type: 'Feature', // Geospatial feature
-                geometry: {
-                  type: 'LineString', // Line connecting multiple GPS points
-                  coordinates: [] // Empty intially, potentially fill in the future if resuming routes etc
-                }
-              }
-            })
-
-            // Add a layer on top of the map that displays the coordinates from the route data source
-            mapRef.current.addLayer({
-              id: 'route',
-              type: 'line', // Draw route as a line
-              source: 'route',
-              layout: {
-                'line-join': 'round', // Join corners smoothly
-                'line-cap': 'round'
-              },
-              paint: {
-                'line-color': '#888', // Default colour from docs, change later and maybe add multiple options
-                'line-width': 8 // Default line thickness from docs
-              }
-            })
-
-            // Display blue circle around user location
-            const geolocate = new mapboxgl.GeolocateControl({
-              trackUserLocation: true,
-              showUserLocation: true,
-              showButton: false
-            });
-            mapRef.current.addControl(geolocate);
-            setTimeout(() => {
-              geolocate.trigger() // Automatically show dot without needing the user to trigger it (wait 500ms for map to load first)
-            }, 500)
-          })
-        }
+        initializeMap(latitude, longitude)
       },
 
-      // If getting GPS location fails
+      // If getting GPS location fails, use default location instead
       (error) => {
+        if (geolocationCancelled) return // Ignore if effect cleanup ran
         console.error("Geolocation error:", error)
-        setError("Failed to get location: " + error.message)
+        // Initialize map with default location instead of showing error
+        initializeMap(51.5074, -0.1278) // Default to London
       },
       {
         enableHighAccuracy: true, // Use GPS locations, instead of cell towers so that routes are more accurate
@@ -126,12 +149,10 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       }
     )
 
+    // Cleanup function - don't remove map, it stays mounted
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove() // Prevent map duplication
-        mapRef.current = null
-        setMapLoaded(false)
-      }
+      geolocationCancelled = true // Cancel any pending geolocation callbacks
+      // Map persists across page navigation
     }
   }, [])
 

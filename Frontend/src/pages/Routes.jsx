@@ -48,7 +48,9 @@ export default function Routes() {
     }
 
     return(
-        <div>
+        <div className="flex flex-col px-5 divide-y divide-gray-200">
+            <PrevRoute route={testRoute} />
+            <PrevRoute route={testRoute} />
             <PrevRoute route={testRoute} />
         </div>
     )
