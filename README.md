@@ -7,19 +7,24 @@ itll  be very good truss
 ## Installing
 
 ### Frontend
+
 Open a terminal in the directory then use the following commands.
+
 ```bash
 cd Frontend
 npm install
 ```
 
 Create a `.env` file in `Frontend` folder containing the following, replacing `<token>` with your MapBoxGL token.
-```
+
+```bash
 VITE_MAPBOX_TOKEN=<token>
 ```
 
 ### Backend
+
 Open a terminal in the directory then use the following commands.
+
 ```bash
 cd Backend
 npm install
@@ -61,7 +66,7 @@ Either of the links should work, and you should be able to use the network one o
 `*` Make sure you have the `.env` file, if not just check the resources channel on discord for what should be in it  
 `*` To test some features you might also need the backend running
 
-### Backend
+### Backen
 
 ```bash
 cd Backend

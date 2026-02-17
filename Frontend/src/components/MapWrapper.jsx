@@ -1,7 +1,7 @@
-import { useLocation } from 'react-router-dom'
-import Map from '../pages/Map'
+import { useLocation } from 'react-router-dom';
+import Map from '../pages/Map';
 
-export default function MapWrapper({ isRecording, setIsRecording, coordinates, setCoordinates, watchIdRef }) {
+export default function MapWrapper({isRecording, setIsRecording, coordinates, setCoordinates, watchIdRef}) {
   const location = useLocation();
   const isMapPage = location.pathname === '/map'; // Check if current page is the map, to determine whether or not to show the map
 

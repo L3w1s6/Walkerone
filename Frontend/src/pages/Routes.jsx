@@ -1,4 +1,4 @@
-import PrevRoute from "../components/Route"
+import PrevRoute from "../components/Route";
 
 export default function Routes() {
     // Test route from the db
@@ -49,9 +49,9 @@ export default function Routes() {
 
     return(
         <div className="flex flex-col px-5 divide-y divide-gray-200">
-            <PrevRoute route={testRoute} />
-            <PrevRoute route={testRoute} />
-            <PrevRoute route={testRoute} />
+            <PrevRoute route={testRoute}/>
+            <PrevRoute route={testRoute}/>
+            <PrevRoute route={testRoute}/>
         </div>
     )
 }

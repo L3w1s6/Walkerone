@@ -1,7 +1,7 @@
-import { useLocation } from "react-router-dom"
-import { useEffect, useRef, useState } from "react"
-import mapboxgl from "mapbox-gl"
-import "mapbox-gl/dist/mapbox-gl.css"
+import { useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 export default function RouteInfo() {
     const location = useLocation();
@@ -41,7 +41,7 @@ export default function RouteInfo() {
                 data: geojson
             })
 
-            map.current.addLayer({ // Add route on top of the map
+            map.current.addLayer({ // Add route on top of the map visually
                 id: 'route',
                 type: 'line',
                 source: 'route',
@@ -56,11 +56,11 @@ export default function RouteInfo() {
             })
 
             // Add markers for route start and end points
-            new mapboxgl.Marker({ color: '#22c55e' })
+            new mapboxgl.Marker({ color: '#22c55e' }) // Green start marker
                 .setLngLat([route.coordinates[0].long, route.coordinates[0].lat])
                 .addTo(map.current)
 
-            new mapboxgl.Marker({ color: '#ef4444' })
+            new mapboxgl.Marker({ color: '#ef4444' }) // Red end marker
                 .setLngLat([route.coordinates[route.coordinates.length - 1].long, route.coordinates[route.coordinates.length - 1].lat])
                 .addTo(map.current)
 
@@ -73,19 +73,21 @@ export default function RouteInfo() {
                 map.current = null
             }
         }
-    }, [route])
+    }, [route]);
 
     if (!route) {
-        return <div className="p-4">No route data available</div>
+        return <div className="p-4"> No route data available </div>
     }
 
     return (
         <div className="p-4">
-            <h1 className="text-3xl font-bold mb-4">{route.name}</h1>
-            {!mapLoaded && <div className="w-full h-96 rounded-lg mb-4 bg-gray-200 flex items-center justify-center">Loading map...</div>}
-            <div ref={mapContainer} style={{ width: '100%', height: '384px' }} className="rounded-lg mb-4" />
+            <h1 className="text-3xl font-bold mb-4"> {route.name} </h1>
+
+            {!mapLoaded && <div className="w-full h-96 rounded-lg mb-4 bg-gray-200 flex items-center justify-center"> Loading map... </div>}
+
+            <div ref={mapContainer} style={{ width: '100%', height: '385px' }} className="rounded-lg mb-4" />
             <div className="bg-white rounded-lg p-4">
-                <p className="text-lg">Distance: {route.distance}km</p>
+                <p className="text-lg"> Distance: {route.distance}km </p>
             </div>
         </div>
     )
