@@ -14,6 +14,18 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const [userLocation, setUserLocation] = useState(null); // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  /*
+  * How It Works:
+  * 1. Map initializes on mount, centered at user's GPS location 
+  * 2. When recording starts, watchPosition continuously gets user GPS coordinates
+  * 3. Each coordinate is appended to the array and drawn as a line on the map (live send to backend via socket.io later too)
+  * 4. When recording stops, route is saved to localStorage and sent to backend
+  * 
+  * Note: The map is always active via a hidden MapWrapper component at the root (becomes unhidden on this page), which is needed to allow routes to keep drawing when not on the map page
+  */
+
+  // -------------------- Backend Functions --------------------
+
   // testing backend flow
   async function testFlow() {
     try {
@@ -41,6 +53,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       return false;
     }
   }
+
+  // -------------------- Map Initialization --------------------
+
   // Setup the map
   useEffect(() => {
     // Only initialize map once
@@ -180,6 +195,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     };
   }, []);
 
+  // -------------------- Geolocation Management --------------------
+
   // Trigger geolocation whenever returning to the map page
   useEffect(() => {
     if (location.pathname === '/map' && geolocateRef.current && mapLoaded) {
@@ -218,6 +235,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     };
   }, [mapLoaded]);
 
+  // -------------------- Route Visualization --------------------
+
   // Update coordinates on the map
   useEffect(() => {
     if (mapRef.current && mapLoaded && mapRef.current.getSource('route') && coordinates.length > 0) { // If map exists and a route has been started
@@ -239,6 +258,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       });
     }
   }, [coordinates, isRecording]); // Run whenever coordinates updates
+
+  // -------------------- Listeners For Start/Stop Button Press --------------------
 
   // Call start recording function when singal recieved from bottom nav
   useEffect(() => {
@@ -266,35 +287,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     };
   }, [isRecording]);
 
-  // Simulate movement for testing
-  const simulateMovement = (direction) => {
-    console.log('isRecording:', isRecording);
-    console.log('userLocation:', userLocation);
-
-    if (!userLocation) {
-      console.log('No user location, returning');
-      return;
-    }
-
-    const step = 0.0001; // Step distance (change for bigger/smaller steps)
-    let newLat = userLocation.lat;
-    let newlong = userLocation.long;
-
-    if (direction === 'north') newLat += step;
-    if (direction === 'south') newLat -= step;
-    if (direction === 'east') newlong += step;
-    if (direction === 'west') newlong -= step;
-
-    setUserLocation({ lat: newLat, long: newlong });
-
-    setCoordinates(prev =>
-      [...prev, { lat: newLat, long: newlong, timestamp: Date.now() }] // Append new coordinates onto the end of coordinate array
-    );
-
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 }); // Update map with new coordinates as center
-    }
-  };
+  // -------------------- Route Recording Functions --------------------
 
   // Start recording a route
   const startRecording = () => {
@@ -374,10 +367,44 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     });
   };
 
+  // -------------------- Testing Functions --------------------
+
+  // Simulate movement for testing
+  const simulateMovement = (direction) => {
+    console.log('isRecording:', isRecording);
+    console.log('userLocation:', userLocation);
+
+    if (!userLocation) {
+      console.log('No user location, returning');
+      return;
+    }
+
+    const step = 0.0001; // Step distance (change for bigger/smaller steps)
+    let newLat = userLocation.lat;
+    let newlong = userLocation.long;
+
+    if (direction === 'north') newLat += step;
+    if (direction === 'south') newLat -= step;
+    if (direction === 'east') newlong += step;
+    if (direction === 'west') newlong -= step;
+
+    setUserLocation({ lat: newLat, long: newlong });
+
+    setCoordinates(prev =>
+      [...prev, { lat: newLat, long: newlong, timestamp: Date.now() }] // Append new coordinates onto the end of coordinate array
+    );
+
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 }); // Update map with new coordinates as center
+    }
+  };
+
+  // -------------------- Display Map --------------------
+
   // Display <p> if error exists
   if (error) {
     return (
-      <div><p className="text-red-600">{error}</p></div>
+      <div><p className="text-red-600"> {error} </p></div>
     );
   }
 
