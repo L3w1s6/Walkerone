@@ -2,6 +2,8 @@ import { useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import {Link} from 'react-router-dom';
+import {HiChevronLeft} from "react-icons/hi";
 
 export default function RouteInfo() {
     const location = useLocation();
@@ -80,14 +82,24 @@ export default function RouteInfo() {
     }
 
     return (
-        <div className="p-4">
-            <h1 className="text-3xl font-bold mb-4"> {route.name} </h1>
+        <div className="w-full h-full flex flex-col justify-between z-0">
+            <div className="flex flex-row gap-4 items-center bg-white rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
+                <Link to="/routes2">
+                    <div className="flex items-center rounded-full border-4 cursor-pointer">
+                        <HiChevronLeft className="w-12 h-12"/>
+                    </div>
+                </Link>
+                <h1 className="grow text-3xl font-bold">{route.name}</h1>
+            </div>
 
-            {!mapLoaded && <div className="w-full h-96 rounded-lg mb-4 bg-gray-200 flex items-center justify-center"> Loading map... </div>}
-
-            <div ref={mapContainer} style={{ width: '100%', height: '385px' }} className="rounded-lg mb-4" />
-            <div className="bg-white rounded-lg p-4">
-                <p className="text-lg"> Distance: {route.distance}km </p>
+            <div className="routeInfoMap flex-col top-0 z-10">{/*Map loading & actual (positioned behind)*/}
+                {!mapLoaded && <div className="routeInfoMap bg-gray-200">Loading map...</div>}
+                <div ref={mapContainer} className="routeInfoMap"/>
+            </div>
+            
+            <div className="flex flex-row gap-4 justify-evenly items-center bg-white rounded-lg m-4 p-2 z-20">
+                <p className="text-lg">Distance: {route.distance}km</p>
+                <p className="text-lg">Calories: 124</p>{/*Example other metric*/}
             </div>
         </div>
     )
