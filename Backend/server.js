@@ -2,6 +2,9 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+
 
 // things which need to be modelled
 
@@ -48,21 +51,28 @@ import cors from "cors";
 
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 dotenv.config();
 
-const URI = process.env.URI
-const PORT = process.env.PORT
+const URI = process.env.URI;
+const PORT = process.env.PORT;
 
 mongoose.connect(URI).then(() => {
-    console.log("mongoDB databases connected")
-    app.listen(PORT, () => {
-        console.log(`server running on http://localhost:${PORT}`)
-    })
-})
-    .catch((error) => console.log(error));
+    console.log("mongoDB databases connected");
+    httpServer.listen(PORT, () => {
+        console.log(`server running on http://localhost:${PORT}`);
+    });
+}).catch((error) => console.log(error));
 
-// THESE ALL USE TO BE IN SEPERATE FILES BUT I GOT FED UP SO EVERYTHING IS GOING IN HERE FOR NOW
+// Create HTTP server and attach Socket.IO, allows us to use both express and socket on the same HTTP server
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "DELETE"]
+    }
+});
+
 
 const doctorSchema = new mongoose.Schema({
     email: { type: String, required: true },
@@ -105,89 +115,150 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     username: String,
     bio: String,
-    pfp: String,  //PLACEHOLDER
+    pfp: String, //PLACEHOLDER
     restingHR: Number, // pull this from user on first start
 
     // from what i can tell if these are only associated with routes, not much reason to put them here unless something changes
     //caloriesBurnt: Number,
     //stepCount: Number,
-
     friends: [{ type: String }], // a user may have many friends, or none at all
 })
 const userModel = mongoose.model('users', userSchema);
 
-//example to see all doctors
+
+
+// Get all doctors
 app.get("/getDoctors", async (req, res) => {
     const doctorData = await doctorModel.find();
     res.json(doctorData);
 });
 
-// get user data by name
+// Get user data by username
 // hmm, if profile sharing is implemented, only select fields should be returned when querying users which arent your own
 app.get("/getUserData", async (req, res) => {
-
     // uncomment this in actual use
     //const {searchName} = req.body
     const searchName = "johnny silverhand" // PLACEHOLDER
     console.log(searchName)
-
     // test version
-    const userData = await userModel.find({username: searchName});
+    const userData = await userModel.find({ username: searchName });
     res.json(userData);
 });
 
+// Get routes by username
 app.get("/getRoutes", async (req, res) => {
-
     // uncomment this in actual use
     //const {searchName} = req.body
     const searchName = "garrytheprophet" // PLACEHOLDER
     console.log(searchName)
 
     // test version
-    const userData = await routeModel.find({username: searchName});
+    const userData = await routeModel.find({ username: searchName });
     res.json(userData);
 });
 
-// add a new route
+// Add a new route
 app.post("/addRoute", async (req, res) => {
-    const { id, coordinates, startTime, endTime } = req.body;
-    const route = new routeModel(
-        {
-            // something weird with mongo means you dont need to define the id itself
-            name: "a route",
-            distance: 0, //PLACEHOLDER
-            caloriesBurned: 0, //PLACEHOLDER
-            elevationGain: 0, //PLACEHOLDER
-            stepCount: 0, //PLACEHOLDER
-            startTime: startTime,
-            endTime: endTime,
-            coordinates: coordinates,
-            username: "garrytheprophet" //PLACEHOLDER
-        }
-    )
+    const { coordinates, startTime, endTime } = req.body;
+    const route = new routeModel({
+        // something weird with mongo means you dont need to define the id itself
+        name: "a route",
+        distance: 0, //PLACEHOLDER
+        caloriesBurned: 0, //PLACEHOLDER
+        elevationGain: 0, //PLACEHOLDER
+        stepCount: 0, //PLACEHOLDER
+        startTime: startTime,
+        endTime: endTime,
+        coordinates: coordinates,
+        username: "garrytheprophet" //PLACEHOLDER
+    });
     await route.save();
-    res.json(route)
+    res.json(route);
 });
-
-
 
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
     const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);
     if (!deletedRoute) {
-        res.json({ message: "Route not found, no route has been deleted" });
+        return res.json({ message: "Route not found, no route has been deleted" });
     }
     res.json(deletedRoute);
 });
 
-// decided
-// Find a router by searching the email of the user
-app.get("/showRoutesByUser/:email", async (req, res) => {
-    const routes = await routeModel.find({ email: req.params.email });
+// Show routes by username (can be changed to email, vice versa, whatever we decide)
+app.get("/showRoutesByUser/:username", async (req, res) => {
+    const routes = await routeModel.find({ username: req.params.username });
     res.json(routes);
 });
 
-app.get('/test', function (req, res, next) {
-    res.json({ msg: 'Hello from backend' })
-})
+// Show and display routes by time 
+app.get("/showRoutesByTime/:username", async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const routes = await routeModel.find({
+        username: req.params.username,
+        startTime: {
+            $gte: startDate,
+            $lte: endDate
+        }
+    }).sort({ startTime: -1 }); // Descending order (newest route first)
+    res.json(routes);
+});
 
+// Test endpoint
+app.get('/test', (req, res) => {
+    res.json({ msg: 'Hello from backend' });
+});
+
+
+io.on("connection", (socket) => {
+    console.log("Connected:", socket.id);
+
+    // Add a new route
+    socket.on("addRoute", async (data) => {
+        const route = new routeModel({
+            name: "a route",
+            distance: 0, //PLACEHOLDER
+            caloriesBurned: 0, //PLACEHOLDER
+            elevationGain: 0, //PLACEHOLDER
+            stepCount: 0, //PLACEHOLDER
+            startTime: data.startTime,
+            endTime: data.endTime,
+            coordinates: data.coordinates,
+            username: data.username
+        });
+        await route.save();
+        socket.emit("routeAdded", { success: true, route });
+    });
+
+    // Delete a route
+    socket.on("deleteRoute", async (data) => {
+        const deletedRoute = await routeModel.findByIdAndDelete(data.id);
+        if (!deletedRoute) {
+            socket.emit("routeDeleted", { success: false, message: "Route not found" });
+        } else {
+            socket.emit("routeDeleted", { success: true, route: deletedRoute });
+        }
+    });
+
+    // Get and display routes by username 
+    socket.on("showRoutesByUser", async (data) => {
+        const routes = await routeModel.find({ username: data.username });
+        socket.emit("routesByUser", { success: true, routes });
+    });
+
+    // Get and display routes by time
+    socket.on("showRoutesByTime", async (data) => {
+        const routes = await routeModel.find({
+            username: data.username,
+            startTime: {
+                $gte: data.startDate,
+                $lte: data.endDate
+            }
+        }).sort({ startTime: -1 }); // Descending order (newest route first)
+        socket.emit("routesByTime", { success: true, routes });
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Disconnected:", socket.id);
+    });
+});
