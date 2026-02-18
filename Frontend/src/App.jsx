@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import MobileBody from './components/MobileBody';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
@@ -10,11 +10,30 @@ import Stats from './pages/Stats';
 import Tasks from './pages/Tasks';
 import RoutesPage from './pages/Routes';
 import RouteInfo from './pages/RouteInfo';
+import { io } from 'socket.io-client';
 
 export default function App() {
   const [isRecording, setIsRecording] = useState(false); // State for checking if a route is currently recording
   const [coordinates, setCoordinates] = useState([]); // State of recorded coordinates on a route
   const watchIdRef = useRef(null); // Reference for GPS tracking session ID
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    // Connect to backend
+    socketRef.current = io();
+
+    socketRef.current.on("connect", () => {
+      console.log("Connected to backend:", socketRef.current.id);
+    });
+
+    socketRef.current.on("disconnect", () => {
+      console.log("Disconnected from backend");
+    });
+
+    return () => {
+      socketRef.current.disconnect(); // Disconnect on close
+    };
+  }, []);
 
   return (
     <BrowserRouter>
