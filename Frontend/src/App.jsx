@@ -4,6 +4,7 @@ import MobileBody from './components/MobileBody';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
 import MapWrapper from './components/MapWrapper';
+import UserSession from './components/UserSession';
 import Account from './pages/Account';
 import Login from './pages/Login';
 import Stats from './pages/Stats';
@@ -41,23 +42,25 @@ export default function App() {
         <Routes> {/* Fullscreen screens */}
           <Route path="/" element={<Login/>}/>
           <Route path="/*" element={
-            <div className="flex flex-col h-dvh justify-between"> {/* Internal screens */}
-              <TopNav/>
-              <div className="flex-1 h-100 overflow-y-auto bg-white relative">
-                {/* Keep the map active at all times (stops it from having to reload constantly which also breaks route recording) */}
-                <MapWrapper isRecording={isRecording} setIsRecording={setIsRecording} coordinates={coordinates} setCoordinates={setCoordinates} watchIdRef={watchIdRef}/>
-                <Routes>
-                  <Route path="/map" element={<div/>}/> {/* Empty screen, actual map added by MapWrapper */}
-                  <Route path="/account" element={<Account/>}/>
-                  <Route path="/routes2" element={<RoutesPage/>}/>
-                  <Route path="/stats" element={<Stats/>}/>
-                  <Route path="/tasks" element={<Tasks/>}/>
-                  <Route path="/route" element = {<RouteInfo/>} />
-                  <Route path="*" element={<div><p>Unknown path</p></div>}/>
-                </Routes>
+            <UserSession>
+              <div className="flex flex-col h-dvh justify-between"> {/* Internal screens */}
+                <TopNav/>
+                <div className="flex-1 h-100 overflow-y-auto bg-white relative">
+                  {/* Keep the map active at all times (stops it from having to reload constantly which also breaks route recording) */}
+                  <MapWrapper isRecording={isRecording} setIsRecording={setIsRecording} coordinates={coordinates} setCoordinates={setCoordinates} watchIdRef={watchIdRef}/>
+                  <Routes>
+                    <Route path="/map" element={<div/>}/> {/* Empty screen, actual map added by MapWrapper */}
+                    <Route path="/account" element={<Account/>}/>
+                    <Route path="/routes2" element={<RoutesPage/>}/>
+                    <Route path="/stats" element={<Stats/>}/>
+                    <Route path="/tasks" element={<Tasks/>}/>
+                    <Route path="/route" element = {<RouteInfo/>} />
+                    <Route path="*" element={<div><p>Unknown path</p></div>}/>
+                  </Routes>
+                </div>
+                <BottomNav isRecording={isRecording}/>
               </div>
-              <BottomNav isRecording={isRecording}/>
-            </div>
+            </UserSession>
           }/>
         </Routes>
       </MobileBody>

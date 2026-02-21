@@ -4,8 +4,7 @@ export default function Account() {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Todo: Make signout properly
-
+    localStorage.removeItem('isAuthenticated');
     // Send the user back to the Login page 
     navigate('/'); 
   };
