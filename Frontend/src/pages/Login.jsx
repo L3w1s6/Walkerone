@@ -69,8 +69,8 @@ export default function Login() {
 
     // login/register setup ports
     const endpoint = isLogin 
-      ? 'http://localhost:8000/api/login' 
-      : 'http://localhost:8000/api/register';
+      ? `http://${window.location.hostname}:8000/api/login` 
+      : `http://${window.location.hostname}:8000/api/register`;
 
     // Package the data based on whether its a login or signup
     const payload = isLogin 
@@ -93,6 +93,7 @@ export default function Login() {
         console.log("Success! Database says:", data);
         // If successful, send the user to the map
         localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userEmail', email);
         navigate('/map');
       } else {
         // If the backend rejects it 

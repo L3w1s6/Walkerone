@@ -271,6 +271,52 @@ app.get("/showRoutesByTime/:username", async (req, res) => {
     res.json(routes);
 });
 
+// Get user email for editing bio
+app.get('/api/user/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    const user = await userModel.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Send back the user data (including the bio!)
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Update user bio or pfp
+app.put('/api/user/update', async (req, res) => {
+  try {
+    const { email, bio, pfp } = req.body;
+
+    const updateData = {};
+    if (bio !== undefined) updateData.bio = bio;
+    if (pfp !== undefined) updateData.pfp = pfp;
+
+    // Find the user by email and update them
+    const updatedUser = await userModel.findOneAndUpdate(
+      { email: email },
+      { $set: updateData },
+      { new: true } 
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(` Profile updated in cloud for: ${email}`);
+    res.status(200).json({ message: "Profile updated!", user: updatedUser });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ message: "Server error updating profile" });
+  }
+});
+
 // Test endpoint
 app.get('/test', (req, res) => {
     res.json({ msg: 'Hello from backend' });

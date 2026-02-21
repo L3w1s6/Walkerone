@@ -71,7 +71,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
     let geolocationCancelled = false; // Track if geolocation should be ignored
 
-    const initializeMap = (latitude, longitude) => {
+    const initializeMap = (latitude, longitude, heading = 0) => {
       if (geolocationCancelled) { 
         return;
       }
@@ -83,7 +83,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
         center: [longitude, latitude], // Center map on the user's current location
-        zoom: 15
+        zoom: 15,
+        bearing: heading !== null ? heading : 0
       });
 
       // Listen for any erros from mapbox
@@ -125,6 +126,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
           trackUserLocation: true,
           showUserLocation: true,
           showAccuracyCircle: true,
+          showUserHeading: true,
           showButton: false
         });
         
@@ -168,9 +170,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       (position) => {
         if (geolocationCancelled) return; // Ignore if effect cleanup ran
         
-        const { latitude, longitude } = position.coords; // Split GPS position into latitude and longitude (needed for updating location on mapbox)
+        const { latitude, longitude, heading } = position.coords; // Split GPS position into latitude and longitude (needed for updating location on mapbox)
         setUserLocation({ lat: latitude, long: longitude }); // Save user's current location
-        initializeMap(latitude, longitude);
+        initializeMap(latitude, longitude, heading);
       },
 
       // If getting GPS location fails, use default location instead
