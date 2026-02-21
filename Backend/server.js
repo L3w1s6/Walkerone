@@ -125,7 +125,74 @@ const userSchema = new mongoose.Schema({
 })
 const userModel = mongoose.model('users', userSchema);
 
+// Sign Up / Register 
+app.post('/api/register', async (req, res) => {
+  try {
+    console.log("NEW REGISTER REQUEST:", req.body); 
+    const { username, email, password } = req.body;
+    
+    // Check if a username with this email already exists 
+    const existingUser = await userModel.findOne({ email: email });
+    
+    if (existingUser) {
+      console.log(" Registration failed: Email already in use.");
+      return res.status(400).json({ message: "Email already in use." });
+    }
 
+    // Create the new user 
+    const newUser = new userModel({ 
+      username: username, 
+      email: email, 
+      password: password,
+    });
+    
+    // Save it to the database
+    await newUser.save(); 
+
+    console.log(" New user saved to MongoDB successfully!");
+    res.status(200).json({ message: "User created successfully!" });
+
+  } catch (error) {
+    console.error("Error saving user:", error);
+    res.status(500).json({ message: "Server error during registration." });
+  }
+});
+
+// Login 
+app.post('/api/login', async (req, res) => {
+  try {
+    console.log("NEW LOGIN REQUEST:", req.body);
+    const { email, password } = req.body;
+    
+    const user = await userModel.findOne({ email: email });
+
+    // If no user is found with that email, deny login
+    if (!user) {
+      console.log(" Login failed: User not found.");
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    // If the user exists, check if the password matches
+    if (user.password !== password) {
+      console.log(" Login failed: Incorrect password.");
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    // Else the username + password matches
+    console.log("✅ Login successful for:", email);
+    
+    // Send back a 200 (Success) and pass along the username so React can use it
+    res.status(200).json({ 
+      message: "Login successful!", 
+      username: user.username 
+    });
+
+    res.status(200).json({ message: "Login endpoint reached!" });
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ message: "Server error during login." });
+  }
+});
 
 // Get all doctors
 app.get("/getDoctors", async (req, res) => {
