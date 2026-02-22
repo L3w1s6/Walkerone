@@ -116,6 +116,7 @@ const userSchema = new mongoose.Schema({
     username: String,
     bio: String,
     pfp: String, //PLACEHOLDER
+    friendReq: [{ type: String }],
     restingHR: Number, // pull this from user on first start
 
     // from what i can tell if these are only associated with routes, not much reason to put them here unless something changes
@@ -200,17 +201,141 @@ app.get("/getDoctors", async (req, res) => {
     res.json(doctorData);
 });
 
+// Send a friend request
+app.post('/api/user/friend-request', async (req, res) => {
+  try {
+    const { senderEmail, targetUsername } = req.body;
+
+    // Find the person you want to add
+    const targetUser = await userModel.findOne({ username: targetUsername });
+    if (!targetUser) {
+      return res.status(404).json({ message: "Target user not found" });
+    }
+
+    // Find the sender to get your username
+    const senderUser = await userModel.findOne({ email: senderEmail });
+    if (!senderUser) {
+      return res.status(404).json({ message: "Sender not found" });
+    }
+
+    // Checking that the original user isnt accounted for
+    if (targetUser.username === senderUser.username) {
+      return res.status(400).json({ message: "You cannot add yourself!" });
+    }
+
+    // Check if you are already friends, or if a request is already pending
+    if (targetUser.friends.includes(senderUser.username)) {
+      return res.status(400).json({ message: "You are already friends!" });
+    }
+    if (targetUser.friendReq.includes(senderUser.username)) {
+      return res.status(400).json({ message: "Friend request already sent!" });
+    }
+
+    // Push your username into their friendReq array
+    targetUser.friendReq.push(senderUser.username);
+    await targetUser.save(); // Save the updated target user to MongoDB
+
+    console.log(` Friend request sent from ${senderUser.username} to ${targetUsername}`);
+    res.status(200).json({ message: "Friend request sent successfully!" });
+
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    res.status(500).json({ message: "Server error while sending request" });
+  }
+});
+
+// Get user data by username
+app.get("/getUserData", async (req, res) => {
+  try {
+    // Grab the search term from the URL query
+    const searchName = req.query.searchName; 
+
+    if (!searchName) {
+      return res.status(400).json({ message: "Please provide a username." });
+    }
+
+    // Return a single object instead of an array
+    const userData = await userModel.findOne({ username: searchName });
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send the found user back to React
+    res.status(200).json(userData);
+    
+  } catch (error) {
+    console.error("Lookup error:", error);
+    res.status(500).json({ message: "Server error during lookup" });
+  }
+});
+
+// ACCEPT REQUEST 
+app.post('/api/user/accept-request', async (req, res) => {
+  try {
+    const { userEmail, senderUsername } = req.body;
+
+    const currentUser = await userModel.findOne({ email: userEmail });
+    const senderUser = await userModel.findOne({ username: senderUsername });
+
+    if (!currentUser || !senderUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove the sender from the current users friend list
+    currentUser.friendReq = currentUser.friendReq.filter(name => name !== senderUsername);
+
+    // Add each other to the friends list
+    if (!currentUser.friends.includes(senderUsername)) {
+      currentUser.friends.push(senderUsername);
+    }
+    if (!senderUser.friends.includes(currentUser.username)) {
+      senderUser.friends.push(currentUser.username);
+    }
+
+    // Save both updated documents
+    await currentUser.save();
+    await senderUser.save();
+
+    console.log(`${currentUser.username} accepted ${senderUsername}'s request!`);
+    res.status(200).json({ message: "Friend request accepted!" });
+  } catch (error) {
+    console.error("Error accepting request:", error);
+    res.status(500).json({ message: "Server error while accepting request" });
+  }
+});
+
+// DECLINE REQUEST
+app.post('/api/user/decline-request', async (req, res) => {
+  try {
+    const { userEmail, senderUsername } = req.body;
+
+    const currentUser = await userModel.findOne({ email: userEmail });
+    if (!currentUser) return res.status(404).json({ message: "User not found" });
+
+    // Remove the sender from the friend list
+    currentUser.friendReq = currentUser.friendReq.filter(name => name !== senderUsername);
+    await currentUser.save();
+
+    console.log(` ${currentUser.username} declined ${senderUsername}'s request.`);
+    res.status(200).json({ message: "Friend request declined." });
+  } catch (error) {
+    console.error("Error declining request:", error);
+    res.status(500).json({ message: "Server error while declining request" });
+  }
+});
+
 // Get user data by username
 // hmm, if profile sharing is implemented, only select fields should be returned when querying users which arent your own
-app.get("/getUserData", async (req, res) => {
-    // uncomment this in actual use
-    //const {searchName} = req.body
-    const searchName = "johnny silverhand" // PLACEHOLDER
-    console.log(searchName)
-    // test version
-    const userData = await userModel.find({ username: searchName });
-    res.json(userData);
-});
+// app.get("/getUserData", async (req, res) => {
+//     // uncomment this in actual use
+//     //const {searchName} = req.body
+//     const searchName = "johnny silverhand" // PLACEHOLDER
+//     console.log(searchName)
+//     // test version
+//     const userData = await userModel.find({ username: searchName });
+//     res.json(userData);
+// });
 
 // Get routes by username
 app.get("/getRoutes", async (req, res) => {
