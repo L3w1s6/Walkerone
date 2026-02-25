@@ -7,60 +7,40 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(''); 
-  const [theme, setTheme] = useState({});
+  const [timeOfDay, setTimeOfDay] = useState('day');
   const navigate = useNavigate();
 
-  // Function to determine the colors based on the hour (0-23)
-  const getThemeByHour = (hour) => {
-    if (hour >= 6 && hour < 10) {
-      // DAYTIME (6 AM - 9:59 AM)
-      return {
-        sky: '#E1F5FE',       // Light Blue
-        celestial: '#FFF59D', // Yellow Sun
-        bgHill: '#AED581',    // Light Green
-        fgHill: '#689F38',    // Deep Green
-        isNight: false
-      };
-    } else if (hour >= 10 && hour < 17) {
-      // MIDAY (10 AM - 4:59 PM)
-      return {
-        sky: '#81D4FA',       // Rich Sky Blue
-        celestial: '#FFCA28', // Golden Sun
-        bgHill: '#81C784',    // Rich Green
-        fgHill: '#388E3C',    // Dark Forest Green
-        isNight: false
-      };
-    } else if (hour >= 17 && hour < 20) {
-      // SUNSET / EVENING (5 PM - 7:59 PM)
-      return {
-        sky: '#FFA726',       // Rich, vibrant orange sky
-        celestial: '#FFEA00', // Bright glowing golden sun
-        bgHill: '#D4E157',    // Warm, sun-baked yellow-green grass
-        fgHill: '#9E9D24',    // Deep golden-olive foreground grass
-        isNight: false
-      };
-    } else {
-      // NIGHT TIME (8 PM - 5:59 AM)
-      return {
-        sky: '#1A237E',       // Deep Navy Blue
-        celestial: '#F5F5F5', // White Moon
-        bgHill: '#37474F',    // Dark Blue/Grey
-        fgHill: '#263238',    // Almost Black
-        isNight: true
-      };
-    }
-  };
-
-  // Set the theme when the page loads
+  // Determine time of day period, used to change background dynamically
   useEffect(() => { 
-    const currentHour = new Date().getHours();
-    setTheme(getThemeByHour(currentHour));
+    const updateTimeOfDay = () => {
+      const hour = new Date().getHours();
+      if (hour >= 6 && hour < 10) {
+        setTimeOfDay('morning');
+      } else if (hour >= 10 && hour < 17) {
+        setTimeOfDay('day');
+      } else if (hour >= 17 && hour < 20) {
+        setTimeOfDay('evening');
+      } else {
+        setTimeOfDay('night');
+      }
+    };
     
-    // Check the time every minute in case they leave the app open
-    const interval = setInterval(() => {
-      setTheme(getThemeByHour(new Date().getHours()));
-    }, 60000);
-    return () => clearInterval(interval);
+    updateTimeOfDay();
+    
+    // Update time hourly
+    const now = new Date();
+    const msUntilNextHour = (60 - now.getMinutes()) * 60000 - now.getSeconds() * 1000; // Calculate how many ms till the next hour begins
+    let interval;
+    
+    const timeout = setTimeout(() => {
+      updateTimeOfDay();
+      interval = setInterval(updateTimeOfDay, 3600000); // Set update interval to an hour at the beginning of each hour
+    }, msUntilNextHour);
+    
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -69,17 +49,13 @@ export default function Login() {
 
     // login/register setup ports
     const endpoint = isLogin 
-      ? `http://localhost:8000/login` 
-      : `http://localhost:8000/register`;
+      ? `/login` 
+      : `/register`;
 
     // Package the data based on whether its a login or signup
-    const payload = isLogin 
-      ? { email, password } 
-      : { username, email, password };
+    const payload = isLogin ? { email, password } : { username, email, password };
 
-    try {
-      // Send the data as a JSON package
-
+    try { // Send the data as a JSON package
       alert(JSON.stringify(payload));
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -93,12 +69,12 @@ export default function Login() {
 
       if (response.ok) {
         console.log("Success! Database says:", data);
-        // If successful, send the user to the map
+        // If login/signup successful, send the user to the map
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userEmail', email);
         navigate('/map');
       } else {
-        // If the backend rejects it 
+        // If the backend rejects login/signup
         setError(data.message || "Failed to authenticate.");
       }
     } catch (err) {
@@ -107,111 +83,85 @@ export default function Login() {
     }
   };
 
-  // Prevent rendering until theme is loaded to avoid flickering
-  if (!theme.sky) return null; 
-
   return (
-    // THE SKY
-    <div 
-      className="min-h-screen w-full flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-1000"
-      style={{ backgroundColor: theme.sky }}
-    >
+    // Update sky based on time of day
+    <div className={`min-h-screen w-full flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-1000 ${
+        timeOfDay === 'morning' ? 'bg-sky-200' :
+        timeOfDay === 'day' ? 'bg-sky-300' :
+        timeOfDay === 'evening' ? 'bg-orange-400' :
+        'bg-blue-900'
+      }`}>
       
-      {/* Sun OR Moon */}
-      <div 
-        className={`absolute w-32 h-32 rounded-full blur-[2px] opacity-90 transition-all duration-1000 ${
-          theme.isNight ? 'top-10 left-20 shadow-[0_0_30px_rgba(255,255,255,0.4)]' : 'top-12 left-10 sm:left-20'
-        }`}
-        style={{ backgroundColor: theme.celestial }}
-      ></div>
+      {/* Update sun/moon based on time of day */}
+      <div className={`absolute w-32 h-32 rounded-full blur-sm opacity-90 transition-all duration-1000 ${
+          timeOfDay === 'night' ? 'top-10 left-20 bg-gray-100 shadow-lg' : 'top-12 left-10 sm:left-20'} 
+        ${
+          timeOfDay === 'morning' ? 'bg-yellow-200' :
+          timeOfDay === 'day' ? 'bg-amber-400' :
+          timeOfDay === 'evening' ? 'bg-yellow-400' : ""
+        }`}/>
       
-      {/* BACKGROUND HILL */}
-      <div 
-        className="absolute bottom-0 left-[-20%] w-[140%] h-[45vh] rounded-t-[100%] transition-colors duration-1000"
-        style={{ backgroundColor: theme.bgHill }}
-      ></div>
+      {/* Update hill in the background based on time of day */}
+      <div className={`absolute bottom-0 -left-1/5 w-[140%] h-[45vh] rounded-t-full transition-colors duration-1000 ${
+          timeOfDay === 'morning' ? 'bg-lime-300' :
+          timeOfDay === 'day' ? 'bg-green-400' :
+          timeOfDay === 'evening' ? 'bg-lime-400' :
+          'bg-slate-700'
+        }`}/>
       
-      {/* FOREGROUND HILL */}
+      {/* Update foreground hill based on time of day */}
       <div 
-        className="absolute bottom-[-5%] right-[-10%] w-[120%] h-[35vh] rounded-t-[100%] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] transition-colors duration-1000"
-        style={{ backgroundColor: theme.fgHill }}
-      ></div>
+        className={`absolute bottom-[-5%] right-[-10%] w-[120%] h-[35vh] rounded-t-full shadow-lg transition-colors duration-1000 ${
+          timeOfDay === 'morning' ? 'bg-green-600' :
+          timeOfDay === 'day' ? 'bg-green-700' :
+          timeOfDay === 'evening' ? 'bg-lime-700' :
+          'bg-slate-800'
+        }`}/>
 
-      {/* THE LOGIN CARD */}
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 sm:p-10 rounded-[2rem] shadow-2xl border border-white/60 relative z-10">
+      {/* Login / Signup */}
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 sm:p-10 rounded-4xl shadow-2xl border border-white/60 relative z-10">
         
         <div className="text-center mb-10">
-          <div className="text-5xl sm:text-6xl mb-8 text-[#2E7D32] font-black tracking-tighter drop-shadow-sm">
+          <h1 className="text-5xl sm:text-6xl mb-8 text-green-700 font-black tracking-tighter drop-shadow-sm">
             Walkerone
-          </div>
-          
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
+          
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
           <p className="text-sm text-gray-600 mt-2 font-medium">
             {isLogin ? 'Enter your details to track your steps.' : 'Sign up to start your journey.'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-semibold rounded-r-lg shadow-sm animate-pulse">
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-semibold rounded-r-lg shadow-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {!isLogin && (
-            <div>
-              <input 
-                type="text" 
-                placeholder="Username" 
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-5 py-4 bg-white/90 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#689F38] outline-none transition-all duration-300 border border-gray-200 shadow-sm"
-              />
-            </div>
-          )}
+          <div className="flex flex-col gap-5 *:w-full *:px-5 *:py-4 *:bg-white/90 *:rounded-xl *:focus:bg-white *:focus:ring-2 *:focus:ring-green-600 *:outline-none *:transition-all *:duration-300 *:border *:border-gray-200 *:shadow-sm">
 
-          <div>
-            <input 
-              type="email" 
-              placeholder="Email Address" 
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-5 py-4 bg-white/90 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#689F38] outline-none transition-all duration-300 border border-gray-200 shadow-sm"
-            />
+            {!isLogin && (
+              <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            )}
+            <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
           </div>
 
-          <div>
-            <input 
-              type="password" 
-              placeholder="Password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-5 py-4 bg-white/90 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#689F38] outline-none transition-all duration-300 border border-gray-200 shadow-sm"
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            className="w-full py-4 mt-2 bg-[#689F38] hover:bg-[#558B2F] text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
-          >
+          <button type="submit" className="w-full py-4 mt-2 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200">
             {isLogin ? 'Log In' : 'Sign Up'}
           </button>
+
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-gray-700 text-sm font-medium">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-[#43A047] font-black hover:underline transition-all ml-1"
-            >
+            <button onClick={() => setIsLogin(!isLogin)} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
               {isLogin ? 'Sign Up' : 'Log In'}
             </button>
           </p>

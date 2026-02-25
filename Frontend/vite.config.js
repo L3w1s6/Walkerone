@@ -35,6 +35,46 @@ export default defineConfig({
       '/show': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/login': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/register': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/getUserData': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/getRoutes': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/addRoute': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/deleteRoute': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/showRoutesByUser': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/showRoutesByTime': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/getDoctors': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   }

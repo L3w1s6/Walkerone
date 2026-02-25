@@ -29,7 +29,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   // testing backend flow
   async function testFlow() {
     try {
-      const res = await fetch('http://localhost:8000/test');
+      const res = await fetch('/test');
       const data = await res.json();
       alert(data.msg);
     } catch (err) {
@@ -40,7 +40,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
   async function addRoute(routeData) {
     try {
-      const res = await fetch('http://localhost:8000/addRoute', {
+      const res = await fetch('/addRoute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(routeData)

@@ -27,7 +27,7 @@ export default function Account() {
     const fetchProfile = async () => {
       if (!userEmail) return;
       try {
-        const response = await fetch(`http://${window.location.hostname}:8000/api/user/${userEmail}`);
+        const response = await fetch(`/api/user/${userEmail}`);
         const data = await response.json();
         if (response.ok) {
           setUsername(data.username || 'Walker');
@@ -46,7 +46,7 @@ export default function Account() {
   // Save the new Bio
   const handleSaveBio = async () => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/api/user/update`, {
+      const response = await fetch(`/api/user/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, bio: bio }),
@@ -63,7 +63,7 @@ export default function Account() {
     setIsSelectingPfp(false); // Close the menu
     
     try {
-      await fetch(`http://${window.location.hostname}:8000/api/user/update`, {
+      await fetch(`/api/user/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, pfp: selectedEmoji }), // Send to DB
@@ -81,7 +81,7 @@ export default function Account() {
     if (!searchQuery) return;
 
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/getUserData?searchName=${searchQuery}`);
+      const response = await fetch(`/getUserData?searchName=${searchQuery}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -98,7 +98,7 @@ export default function Account() {
   //  Send the friend request
   const handleSendRequest = async () => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/api/user/friend-request`, {
+      const response = await fetch(`/api/user/friend-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -125,7 +125,7 @@ export default function Account() {
   // Accept friend request
   const handleAcceptRequest = async (senderUsername) => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/api/user/accept-request`, {
+      const response = await fetch(`/api/user/accept-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userEmail, senderUsername }),
@@ -150,7 +150,7 @@ export default function Account() {
   // Decline friend request
   const handleDeclineRequest = async (senderUsername) => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/api/user/decline-request`, {
+      const response = await fetch(`/api/user/decline-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userEmail, senderUsername }),
