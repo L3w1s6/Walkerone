@@ -69,8 +69,8 @@ export default function Login() {
 
     // login/register setup ports
     const endpoint = isLogin 
-      ? `http://${window.location.hostname}:8000/api/login` 
-      : `http://${window.location.hostname}:8000/api/register`;
+      ? `http://localhost:8000/login` 
+      : `http://localhost:8000/register`;
 
     // Package the data based on whether its a login or signup
     const payload = isLogin 
@@ -79,6 +79,8 @@ export default function Login() {
 
     try {
       // Send the data as a JSON package
+
+      alert(JSON.stringify(payload));
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {

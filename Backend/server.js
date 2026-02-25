@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import bcrypt from "bcrypt";
+
 import { createServer } from "http";
 import { Server } from "socket.io";
 
@@ -56,99 +58,123 @@ dotenv.config();
 
 const URI = process.env.URI;
 const PORT = process.env.PORT;
+// bcrypt password hashing
+const saltRounds = 10;
 
 mongoose.connect(URI).then(() => {
-    console.log("mongoDB databases connected");
-    httpServer.listen(PORT, () => {
-        console.log(`server running on http://localhost:${PORT}`);
-    });
+  console.log("mongoDB databases connected");
+  httpServer.listen(PORT, () => {
+    console.log(`server running on http://localhost:${PORT}`);
+  });
 }).catch((error) => console.log(error));
 
 // Create HTTP server and attach Socket.IO, allows us to use both express and socket on the same HTTP server
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST", "DELETE"]
-    }
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "DELETE"]
+  }
 });
 
-
 const doctorSchema = new mongoose.Schema({
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    username: String,
-    userEmails: [String] // a doctor can be linked to many users, or none at all
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  username: String,
+  userEmails: [String] // a doctor can be linked to many users, or none at all
 })
 const doctorModel = mongoose.model('doctors', doctorSchema);
 
 const routeSchema = new mongoose.Schema({
-    name: { type: String, required: true, default: "default" },
-    distance: Number,
-    caloriesBurned: Number,
-    elevationGain: Number,
-    stepCount: Number,
-    startTime: String,
-    endTime: String,
-    coordinates: [
-        {
-            lat: Number,
-            long: Number,
-            timestamp: Date
-        }
-    ],
-    username: { type: String, required: true } // link a route to a user
+  name: { type: String, required: true, default: "default" },
+  distance: Number,
+  caloriesBurned: Number,
+  elevationGain: Number,
+  stepCount: Number,
+  startTime: String,
+  endTime: String,
+  coordinates: [
+    {
+      lat: Number,
+      long: Number,
+      timestamp: Date
+    }
+  ],
+  username: { type: String, required: true } // link a route to a user
 })
 const routeModel = mongoose.model('routes', routeSchema);
 
 const taskSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    description: String,
-    creator: { type: String, required: true },
-    assignedTo: { type: String, required: true }, // link a task to a user
-    complete: Boolean
+  name: { type: String, required: true },
+  description: String,
+  creator: { type: String, required: true },
+  assignedTo: { type: String, required: true }, // link a task to a user
+  complete: Boolean
 })
 const taskModel = mongoose.model('tasks', taskSchema);
 
 const userSchema = new mongoose.Schema({
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    username: String,
-    bio: String,
-    pfp: String, //PLACEHOLDER
-    friendReq: [{ type: String }],
-    restingHR: Number, // pull this from user on first start
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  username: String,
+  bio: String,
+  pfp: String, //PLACEHOLDER
+  friendReq: [{ type: String }],
+  restingHR: Number, // pull this from user on first start
 
-    // from what i can tell if these are only associated with routes, not much reason to put them here unless something changes
-    //caloriesBurnt: Number,
-    //stepCount: Number,
-    friends: [{ type: String }], // a user may have many friends, or none at all
+  // from what i can tell if these are only associated with routes, not much reason to put them here unless something changes
+  //caloriesBurnt: Number,
+  //stepCount: Number,
+  friends: [{ type: String }], // a user may have many friends, or none at all
 })
 const userModel = mongoose.model('users', userSchema);
 
+
+
+
 // Sign Up / Register 
-app.post('/api/register', async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
-    console.log("NEW REGISTER REQUEST:", req.body); 
+    console.log("NEW REGISTER REQUEST:", req.body);
     const { username, email, password } = req.body;
-    
+    let hashed;
+
     // Check if a username with this email already exists 
     const existingUser = await userModel.findOne({ email: email });
-    
+
     if (existingUser) {
       console.log(" Registration failed: Email already in use.");
       return res.status(400).json({ message: "Email already in use." });
     }
 
-    // Create the new user 
-    const newUser = new userModel({ 
-      username: username, 
-      email: email, 
-      password: password,
+    bcrypt.hash(password, saltRounds, function (err, hashedpassword) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      hashed = hashedpassword
+      console.log("printing hashed")
+      console.log(hashed);
+
+      // create the new user 
+      const newUser = new userModel({
+        email: email,
+        password: hashed,
+        username: username,
+        bio: "",
+        pfp: "",
+        friendReq: [],
+        restingHR: 0,
+        friends: []
+      });
+
+      // save it to the database
+      newUser.save();
+      // somethings not right, its printing the debugging messages last, even though it should happen before it starts saving
+      // it does save anyway, but its definetely a bit weird its doing that
+
     });
-    
-    // Save it to the database
-    await newUser.save(); 
+
 
     console.log(" New user saved to MongoDB successfully!");
     res.status(200).json({ message: "User created successfully!" });
@@ -160,35 +186,40 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Login 
-app.post('/api/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     console.log("NEW LOGIN REQUEST:", req.body);
     const { email, password } = req.body;
-    
+
     const user = await userModel.findOne({ email: email });
 
-    // If no user is found with that email, deny login
     if (!user) {
       console.log(" Login failed: User not found.");
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    // If the user exists, check if the password matches
-    if (user.password !== password) {
-      console.log(" Login failed: Incorrect password.");
-      return res.status(401).json({ message: "Invalid email or password." });
-    }
+    console.log(password);
+    console.log(user.password);
 
-    // Else the username + password matches
-    console.log("✅ Login successful for:", email);
-    
-    // Send back a 200 (Success) and pass along the username so React can use it
-    res.status(200).json({ 
-      message: "Login successful!", 
-      username: user.username 
+    bcrypt.compare(password.trim(), user.password, function (err, result) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error during login." });
+      }
+
+      if (result) {
+        console.log("Password is correct!");
+        console.log("Login successful for:", email);
+        return res.status(200).json({
+          message: "Login successful!",
+          username: user.username
+        });
+      } else {
+        console.log("Wrong password");
+        return res.status(401).json({ message: "Invalid email or password." });
+      }
     });
 
-    res.status(200).json({ message: "Login endpoint reached!" });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ message: "Server error during login." });
@@ -197,8 +228,8 @@ app.post('/api/login', async (req, res) => {
 
 // Get all doctors
 app.get("/getDoctors", async (req, res) => {
-    const doctorData = await doctorModel.find();
-    res.json(doctorData);
+  const doctorData = await doctorModel.find();
+  res.json(doctorData);
 });
 
 // Send a friend request
@@ -248,7 +279,7 @@ app.post('/api/user/friend-request', async (req, res) => {
 app.get("/getUserData", async (req, res) => {
   try {
     // Grab the search term from the URL query
-    const searchName = req.query.searchName; 
+    const searchName = req.query.searchName;
 
     if (!searchName) {
       return res.status(400).json({ message: "Please provide a username." });
@@ -263,7 +294,7 @@ app.get("/getUserData", async (req, res) => {
 
     // Send the found user back to React
     res.status(200).json(userData);
-    
+
   } catch (error) {
     console.error("Lookup error:", error);
     res.status(500).json({ message: "Server error during lookup" });
@@ -339,61 +370,61 @@ app.post('/api/user/decline-request', async (req, res) => {
 
 // Get routes by username
 app.get("/getRoutes", async (req, res) => {
-    // uncomment this in actual use
-    //const {searchName} = req.body
-    const searchName = "garrytheprophet" // PLACEHOLDER
-    console.log(searchName)
+  // uncomment this in actual use
+  //const {searchName} = req.body
+  const searchName = "garrytheprophet" // PLACEHOLDER
+  console.log(searchName)
 
-    // test version
-    const userData = await routeModel.find({ username: searchName });
-    res.json(userData);
+  // test version
+  const userData = await routeModel.find({ username: searchName });
+  res.json(userData);
 });
 
 // Add a new route
 app.post("/addRoute", async (req, res) => {
-    const { coordinates, startTime, endTime } = req.body;
-    const route = new routeModel({
-        // something weird with mongo means you dont need to define the id itself
-        name: "a route",
-        distance: 0, //PLACEHOLDER
-        caloriesBurned: 0, //PLACEHOLDER
-        elevationGain: 0, //PLACEHOLDER
-        stepCount: 0, //PLACEHOLDER
-        startTime: startTime,
-        endTime: endTime,
-        coordinates: coordinates,
-        username: "garrytheprophet" //PLACEHOLDER
-    });
-    await route.save();
-    res.json(route);
+  const { coordinates, startTime, endTime } = req.body;
+  const route = new routeModel({
+    // something weird with mongo means you dont need to define the id itself
+    name: "a route",
+    distance: 0, //PLACEHOLDER
+    caloriesBurned: 0, //PLACEHOLDER
+    elevationGain: 0, //PLACEHOLDER
+    stepCount: 0, //PLACEHOLDER
+    startTime: startTime,
+    endTime: endTime,
+    coordinates: coordinates,
+    username: "garrytheprophet" //PLACEHOLDER
+  });
+  await route.save();
+  res.json(route);
 });
 
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
-    const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);
-    if (!deletedRoute) {
-        return res.json({ message: "Route not found, no route has been deleted" });
-    }
-    res.json(deletedRoute);
+  const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);
+  if (!deletedRoute) {
+    return res.json({ message: "Route not found, no route has been deleted" });
+  }
+  res.json(deletedRoute);
 });
 
 // Show routes by username (can be changed to email, vice versa, whatever we decide)
 app.get("/showRoutesByUser/:username", async (req, res) => {
-    const routes = await routeModel.find({ username: req.params.username });
-    res.json(routes);
+  const routes = await routeModel.find({ username: req.params.username });
+  res.json(routes);
 });
 
 // Show and display routes by time 
 app.get("/showRoutesByTime/:username", async (req, res) => {
-    const { startDate, endDate } = req.query;
-    const routes = await routeModel.find({
-        username: req.params.username,
-        startTime: {
-            $gte: startDate,
-            $lte: endDate
-        }
-    }).sort({ startTime: -1 }); // Descending order (newest route first)
-    res.json(routes);
+  const { startDate, endDate } = req.query;
+  const routes = await routeModel.find({
+    username: req.params.username,
+    startTime: {
+      $gte: startDate,
+      $lte: endDate
+    }
+  }).sort({ startTime: -1 }); // Descending order (newest route first)
+  res.json(routes);
 });
 
 // Get user email for editing bio
@@ -401,11 +432,11 @@ app.get('/api/user/:email', async (req, res) => {
   try {
     const userEmail = req.params.email;
     const user = await userModel.findOne({ email: userEmail });
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     // Send back the user data (including the bio!)
     res.status(200).json(user);
   } catch (error) {
@@ -427,7 +458,7 @@ app.put('/api/user/update', async (req, res) => {
     const updatedUser = await userModel.findOneAndUpdate(
       { email: email },
       { $set: updateData },
-      { new: true } 
+      { new: true }
     );
 
     if (!updatedUser) {
@@ -444,59 +475,59 @@ app.put('/api/user/update', async (req, res) => {
 
 // Test endpoint
 app.get('/test', (req, res) => {
-    res.json({ msg: 'Hello from backend' });
+  res.json({ msg: 'Hello from backend' });
 });
 
 
 io.on("connection", (socket) => {
-    console.log("Connected:", socket.id);
+  console.log("Connected:", socket.id);
 
-    // Add a new route
-    socket.on("addRoute", async (data) => {
-        const route = new routeModel({
-            name: "a route",
-            distance: 0, //PLACEHOLDER
-            caloriesBurned: 0, //PLACEHOLDER
-            elevationGain: 0, //PLACEHOLDER
-            stepCount: 0, //PLACEHOLDER
-            startTime: data.startTime,
-            endTime: data.endTime,
-            coordinates: data.coordinates,
-            username: data.username
-        });
-        await route.save();
-        socket.emit("routeAdded", { success: true, route });
+  // Add a new route
+  socket.on("addRoute", async (data) => {
+    const route = new routeModel({
+      name: "a route",
+      distance: 0, //PLACEHOLDER
+      caloriesBurned: 0, //PLACEHOLDER
+      elevationGain: 0, //PLACEHOLDER
+      stepCount: 0, //PLACEHOLDER
+      startTime: data.startTime,
+      endTime: data.endTime,
+      coordinates: data.coordinates,
+      username: data.username
     });
+    await route.save();
+    socket.emit("routeAdded", { success: true, route });
+  });
 
-    // Delete a route
-    socket.on("deleteRoute", async (data) => {
-        const deletedRoute = await routeModel.findByIdAndDelete(data.id);
-        if (!deletedRoute) {
-            socket.emit("routeDeleted", { success: false, message: "Route not found" });
-        } else {
-            socket.emit("routeDeleted", { success: true, route: deletedRoute });
-        }
-    });
+  // Delete a route
+  socket.on("deleteRoute", async (data) => {
+    const deletedRoute = await routeModel.findByIdAndDelete(data.id);
+    if (!deletedRoute) {
+      socket.emit("routeDeleted", { success: false, message: "Route not found" });
+    } else {
+      socket.emit("routeDeleted", { success: true, route: deletedRoute });
+    }
+  });
 
-    // Get and display routes by username 
-    socket.on("showRoutesByUser", async (data) => {
-        const routes = await routeModel.find({ username: data.username });
-        socket.emit("routesByUser", { success: true, routes });
-    });
+  // Get and display routes by username 
+  socket.on("showRoutesByUser", async (data) => {
+    const routes = await routeModel.find({ username: data.username });
+    socket.emit("routesByUser", { success: true, routes });
+  });
 
-    // Get and display routes by time
-    socket.on("showRoutesByTime", async (data) => {
-        const routes = await routeModel.find({
-            username: data.username,
-            startTime: {
-                $gte: data.startDate,
-                $lte: data.endDate
-            }
-        }).sort({ startTime: -1 }); // Descending order (newest route first)
-        socket.emit("routesByTime", { success: true, routes });
-    });
+  // Get and display routes by time
+  socket.on("showRoutesByTime", async (data) => {
+    const routes = await routeModel.find({
+      username: data.username,
+      startTime: {
+        $gte: data.startDate,
+        $lte: data.endDate
+      }
+    }).sort({ startTime: -1 }); // Descending order (newest route first)
+    socket.emit("routesByTime", { success: true, routes });
+  });
 
-    socket.on("disconnect", () => {
-        console.log("Disconnected:", socket.id);
-    });
+  socket.on("disconnect", () => {
+    console.log("Disconnected:", socket.id);
+  });
 });
