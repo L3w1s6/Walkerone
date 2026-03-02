@@ -81,3 +81,9 @@ Server started on 8000
 ```
 
 `*` Make sure you have the `.env` file, if not just check the resources channel on discord for what should be in it
+
+### Both Frontend & Backend
+In a terminal in VSCode use the following command to run both the frontend & backend from one command (seperate terminal windows):
+```bash
+runDev.bat
+```
