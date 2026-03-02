@@ -66,7 +66,7 @@ Either of the links should work, and you should be able to use the network one o
 `*` Make sure you have the `.env` file, if not just check the resources channel on discord for what should be in it  
 `*` To test some features you might also need the backend running
 
-### Backen
+### Backend
 
 ```bash
 cd Backend
