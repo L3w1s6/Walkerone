@@ -29,7 +29,7 @@ export default function Account() {
         const data = await response.json();
         if (response.ok) { // Load in profile info
           setUsername(data.username || 'Walker');
-          setBio(data.bio || 'No bio added yet. Click edit to add one!');
+          setBio(data.bio || 'No bio added yet. Click below to add one!');
           setPfp(data.pfp || '👤');
           setFriendsList(data.friends || []);
           setPendingRequests(data.friendReq || []);
@@ -196,17 +196,17 @@ export default function Account() {
         <div className="mt-4 mb-8">
           {isEditing ? (
             <div className="space-y-3">
-              <textarea onChange={(e) => setBio(e.target.value)} value={bio} rows="3" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-400 outline-none text-sm"/>
-              <button onClick={handleSaveBio} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full">
+              <textarea onChange={(e) => setBio(e.target.value)} value={bio} rows="3" className="w-full p-3 border rounded-xl bg-gray-50  outline-none text-sm"/>
+              <button onClick={handleSaveBio} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full cursor-pointer">
                 Save Bio
               </button>
             </div>
           ) : (
             <div>
               <p className="text-gray-500 italic text-sm px-4">
-                "{bio}"
+                {bio}
               </p>
-              <button onClick={() => setIsEditing(true)} className="text-green-600 text-xs font-bold mt-2 hover:underline">
+              <button onClick={() => setIsEditing(true)} className="text-green-600 text-xs font-bold mt-2 hover:underline cursor-pointer">
                 Edit Bio
               </button>
             </div>
@@ -277,7 +277,7 @@ export default function Account() {
             {/* Search bar */}
             <div className="flex gap-2 mb-2">
               <input type="text" placeholder="Search username..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
-              <button onClick={handleSearchUser} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold">
+              <button onClick={handleSearchUser} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
                 Search
               </button>
             </div>
@@ -302,7 +302,7 @@ export default function Account() {
           </div>
         </div>
 
-        <button onClick={handleSignOut} className="w-full py-3 bg-red-50 text-red-500 hover:bg-red-100 font-black rounded-2xl transition-all border border-red-100">
+        <button onClick={handleSignOut} className="w-full py-3 bg-red-50 text-red-500 hover:bg-red-100 font-black rounded-2xl transition-all border border-red-100 cursor-pointer">
           Sign Out
         </button>
       </div>

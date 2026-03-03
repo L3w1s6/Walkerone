@@ -1,20 +1,29 @@
-import { useState } from 'react';
+export default function Task({name, description, completionDate, taskCompleted, onToggle}) {
 
-export default function Task({name, description}) {
-    const [taskCompleted, setTaskCompleted] = useState(false);
-
-    const handleClick = () => {
-        setTaskCompleted(!taskCompleted); // Toggle task completion when the tick is clicked
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString('en-UK', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
         <div className="h-auto w-full flex flex-row justify-between rounded-lg p-1 bg-white">
             <div>
-                <h2 className="text-3xl font-semibold"> {name} </h2>
-                <p className="text-sm text-neutral-600"> {description} </p>
+                <h2 className="text-2xl font-semibold"> {name} </h2>
+                <div className='flex flex-row gap-2 text-xs text-neutral-500'>
+                    <p> {description} </p>
+                    <p> | </p>
+                    {completionDate && <p className="text-xs text-neutral-500">Due: {formatDate(completionDate)}</p>}
+                </div>
             </div>
-            <div onClick={handleClick} className={` h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full cursor-pointer select-none`}>
-                <span className="text-green-400 text-4xl"> ✔️ </span>
+            <div onClick={onToggle} className={` h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full cursor-pointer select-none`}>
+                <span className="text-4xl"> ✔️ </span>
             </div>
         </div>
     )
