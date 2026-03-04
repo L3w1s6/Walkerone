@@ -1,4 +1,4 @@
-import {Line} from 'react-chartjs-2';
+import {Doughnut, Line} from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -8,7 +8,10 @@ import {
     Title,
     Tooltip,
     Legend,
+    ArcElement,
+    RadialLinearScale,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels'
 
 //required to explicitly register used components
 ChartJS.register(
@@ -18,7 +21,9 @@ ChartJS.register(
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    ArcElement,
+    RadialLinearScale,
 );
 
 //function to create heartrate colour gradient
@@ -48,7 +53,7 @@ export default function Stats() {
         labels: heartLabels,
         datasets: [
             {
-                label: "Heartrate",
+                label: "BPM",
                 data: heartData,
                 borderWidth: 1,
                 borderColor: function(context) {
@@ -62,11 +67,11 @@ export default function Stats() {
         ],
     }
     const heartOps = {
-        scales: {
+        scales: {//axis
             x: {
                 title: {
                     display: true,
-                    text: "Time (mins)"
+                    text: "Time"
                 }
             },
             y: {
@@ -79,29 +84,112 @@ export default function Stats() {
             }
         },
         plugins: {
-            legend: {
-                position: "top"
+            legend: {//key
+                display: false
+            },
+            title: {
+                display: true,
+                text: "Heartrate",
+                font: {
+                    weight: "bold",
+                    size: 15
+                }
             }
+        },
+        interaction: {//hover tooltip behaviour
+            intersect: false,
+            mode: "nearest",
+            axis: "x"
         }
     }
 
     //Steps chart
+    const stepData = [7500,2500]
+    const stepDatasets = {
+        labels: ["Done","Remaining"],
+        datasets: [
+            {
+                label: "Steps",
+                data: stepData,
+                backgroundColor: ["#00aaff", "#eeeeee"]
+            }
+        ]
+    }
+    const stepOps = {
+        plugins: {
+            legend: {
+                display: true,
+                title: {
+                    display: true,
+                    text: "Steps",
+                    font: {
+                        weight: "bold",
+                        size: 15
+                    }
+                }
+            },
+            datalabels: {
+                color: "#000000",
+                font: {
+                    size: 12
+                },
+                formatter: (v, ctx) => {
+                    return v
+                }
+            }
+        }
+    }
 
     //Calories chart
+    const calData = [1500,1500]
+    const calDatasets = {
+        labels: ["Burned","Remaining"],
+        datasets: [
+            {
+                label: "Calories",
+                data: calData,
+                backgroundColor: ["#00ffaa", "#eeeeee"]
+            }
+        ]
+    }
+    const calOps = {
+        plugins: {
+            legend: {
+                display: true,
+                title: {
+                    display: true,
+                    text: "Calories",
+                    font: {
+                        weight: "bold",
+                        size: 15
+                    }
+                }
+            },
+            datalabels: {
+                color: "#000000",
+                font: {
+                    size: 12
+                },
+                formatter: (v, ctx) => {
+                    return v + " kcal"
+                }
+            }
+        }
+    }
 
     return(
-        <div className="flex flex-col w-full h-full p-2 justify-between">
+        <div className="flex flex-col justify-around w-full h-full">
             <div className="flex w-full"> {/* Heartrate line graph */}
                 <Line data={heartDatasets} options={heartOps} />
             </div>
 
-            <div className="flex flex-row justify-between">
-                <div className="flex"> {/* Steps pie? */}
-                    steps
+            <div className="flex flex-row justify-between w-full">
+                <div className="flex flex-col w-full"> {/* Steps pie? */}
+                    <Doughnut data={stepDatasets} options={stepOps} plugins={[ChartDataLabels]} />
                 </div>
 
-                <div className="flex"> {/* Calories pie? */}
-                    calories
+                <div className="flex flex-col w-full"> {/* Calories pie? */}
+                    <Doughnut data={calDatasets} options={calOps} plugins={[ChartDataLabels]} />
                 </div>
             </div>
 
