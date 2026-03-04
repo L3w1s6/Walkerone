@@ -133,7 +133,7 @@ const userModel = mongoose.model('users', userSchema);
 
 
 // Sign Up / Register 
-app.post('/register', async (req, res) => {
+app.post('/user-register', async (req, res) => {
   try {
     console.log("NEW REGISTER REQUEST:", req.body);
     const { username, email, password } = req.body;
@@ -186,7 +186,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login 
-app.post('/login', async (req, res) => {
+app.post('/user-login', async (req, res) => {
   try {
     console.log("NEW LOGIN REQUEST:", req.body);
     const { email, password } = req.body;

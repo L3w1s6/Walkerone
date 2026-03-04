@@ -182,7 +182,7 @@ export default function Account() {
           {isSelectingPfp && (
             <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 w-48 grid grid-cols-3 gap-2">
               {availableAvatars.map((avatar) => (
-                <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors">
+                <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors cursor-pointer">
                   {avatar}
                 </button>
               ))}

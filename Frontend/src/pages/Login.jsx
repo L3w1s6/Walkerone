@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
+  const [userType, setUserType] = useState('user'); // State for managing whether loggin in/signing up as a user or doctor
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,16 +48,15 @@ export default function Login() {
     e.preventDefault();
     setError(''); // Clear old errors
 
-    // login/register setup ports
+    // Determine endpoint based on user type and login/signup
     const endpoint = isLogin 
-      ? `/login` 
-      : `/register`;
+      ? `/${userType}-login` 
+      : `/${userType}-register`;
 
     // Package the data based on whether its a login or signup
     const payload = isLogin ? { email, password } : { username, email, password };
 
     try { // Send the data as a JSON package
-      alert(JSON.stringify(payload));
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -69,9 +69,10 @@ export default function Login() {
 
       if (response.ok) {
         console.log("Success! Database says:", data);
-        // If login/signup successful, send the user to the map
+        // If login/signup successful, send the user to the appropriate page
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userEmail', email);
+        localStorage.setItem('userType', userType);
         navigate('/map');
       } else {
         // If the backend rejects login/signup
@@ -152,7 +153,7 @@ export default function Login() {
 
           </div>
 
-          <button type="submit" className="w-full py-4 mt-2 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200">
+          <button type="submit" className="w-full py-4 mt-2 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 cursor-pointer">
             {isLogin ? 'Log In' : 'Sign Up'}
           </button>
 
@@ -163,6 +164,12 @@ export default function Login() {
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button onClick={() => setIsLogin(!isLogin)} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
               {isLogin ? 'Sign Up' : 'Log In'}
+            </button>
+          </p>
+
+          <p className="text-gray-700 text-sm font-medium mt-4">
+            <button  onClick={() => setUserType(userType === 'user' ? 'doctor' : 'user')} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
+              {isLogin ? "Log in as a" : "Sign up as a "} {userType === 'user' ? 'doctor' : 'user'}
             </button>
           </p>
         </div>

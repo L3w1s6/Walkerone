@@ -57,7 +57,7 @@ export default function Tasks() {
                 
                 {completedTasks.length > 0 &&
                 <div>
-                    <span className="text-3xl font-bold px-5 mt-6 block"> Completed </span>
+                    <span className="text-3xl font-bold px-5 mt-2 block"> Completed </span>
                     <div className="flex flex-col px-5 divide-y divide-gray-200">
                         {completedTasks.map((task) => (
                             <Task key={task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => toggleTaskCompletion(task.id)}/>
@@ -87,7 +87,7 @@ export default function Tasks() {
                             <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
                                 Cancel
                             </button>
-                            <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg transition hover:bg-green-600 cursor-pointer">
+                            <button type="submit" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">
                                 Create Task
                             </button>
                         </div>

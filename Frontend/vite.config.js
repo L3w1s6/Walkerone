@@ -36,11 +36,11 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
-      '/login': {
+      '/user-login': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
-      '/register': {
+      '/user-register': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
