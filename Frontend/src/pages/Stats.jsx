@@ -31,6 +31,7 @@ function getGrad(context) {
 }
 
 export default function Stats() {
+    //Heartrate chart
     //manual data & labels for now
     const heartLabels = [1,2,3,4,5,6,7,8,9,10]
     const heartData = [
@@ -61,9 +62,19 @@ export default function Stats() {
     }
     const heartOps = {
         scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: "Time (mins)"
+                }
+            },
             y: {
                 suggestedMin: 60,
-                suggestedMax: 180
+                suggestedMax: 180,
+                title: {
+                    display: true,
+                    text: "BPM"
+                }
             }
         },
         plugins: {
@@ -73,8 +84,12 @@ export default function Stats() {
         }
     }
 
+    //Steps chart
+
+    //Calories chart
+
     return(
-        <div className="flex flex-col w-full h-full p-4 justify-between">
+        <div className="flex flex-col w-full h-full p-2 justify-between">
             <div className="flex w-full"> {/* Heartrate line graph */}
                 <Line data={heartDatasets} options={heartOps} />
             </div>
