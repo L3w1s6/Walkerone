@@ -56,7 +56,8 @@ export default function Stats() {
                         return
                     }
                     return getGrad(context)
-                }
+                },
+                tension: 0.4
             }
         ],
     }
