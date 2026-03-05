@@ -11,6 +11,7 @@ import Stats from './pages/Stats';
 import Tasks from './pages/Tasks';
 import RoutesPage from './pages/Routes';
 import RouteInfo from './pages/RouteInfo';
+import Leaderboard from './pages/Leaderboard';
 import { io } from 'socket.io-client';
 
 export default function App() {
@@ -54,7 +55,8 @@ export default function App() {
                     <Route path="/routes2" element={<RoutesPage/>}/>
                     <Route path="/stats" element={<Stats/>}/>
                     <Route path="/tasks" element={<Tasks/>}/>
-                    <Route path="/route" element = {<RouteInfo/>} />
+                    <Route path="/route" element = {<RouteInfo/>}/>
+                    <Route path="/leaderboard" element = {<Leaderboard/>}/>
                     <Route path="*" element={<div><p>Unknown path</p></div>}/>
                   </Routes>
                 </div>
