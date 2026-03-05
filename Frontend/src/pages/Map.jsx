@@ -14,6 +14,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const [userLocation, setUserLocation] = useState(null); // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  const userEmail = localStorage.getItem('userEmail');
+
   /*
   * How It Works:
   * 1. Map initializes on mount, centered at user's GPS location 
@@ -359,7 +361,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
           id: Date.now(),
           coordinates: currentCoords,
           startTime: new Date(currentCoords[0].timestamp).toISOString(),
-          endTime: new Date(currentCoords[currentCoords.length - 1].timestamp).toISOString()
+          endTime: new Date(currentCoords[currentCoords.length - 1].timestamp).toISOString(),
+          email: userEmail
         };
 
         const savedRoutes = JSON.parse(localStorage.getItem('routes') || '[]');
