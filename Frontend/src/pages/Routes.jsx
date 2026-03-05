@@ -47,11 +47,22 @@ export default function Routes() {
         __v: 0
     }
 
-    return(
-        <div className="flex flex-col px-5 divide-y divide-gray-200">
-            <PrevRoute route={testRoute}/>
-            <PrevRoute route={testRoute}/>
-            <PrevRoute route={testRoute}/>
+    return (
+        <div>
+            <div className="text-center mb-8 pt-6">
+                <h1 className="text-4xl font-black text-green-700 mb-2">
+                    Routes
+                </h1>
+                <p className="text-gray-600 font-medium">
+                    View you and your friends' routes!
+                </p>
+            </div>
+
+            <div className="flex flex-col px-5 divide-y divide-gray-200">
+                <PrevRoute route={testRoute}/>
+                <PrevRoute route={testRoute}/>
+                <PrevRoute route={testRoute}/>
+            </div>
         </div>
     )
 }

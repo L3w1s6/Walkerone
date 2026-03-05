@@ -4,7 +4,7 @@ import {HiLocationMarker, HiChevronUp} from "react-icons/hi";// Using HeroIcons 
 const Item = ({name, icon: Icon, path}) => {
     return (
         <Link to={path}>
-            <div className="flex flex-col items-center text-green-600 cursor-pointer">
+            <div className="w-20 flex flex-col items-center text-green-600 cursor-pointer transition hover:scale-115">
                 <Icon className="w-12 h-12 text-green-600"/>
                 <span className="text-xl font-medium mb-1"> {name} </span>
             </div>
@@ -35,7 +35,7 @@ export default function BottomNav({ isRecording }) {
         <Item name="Map" icon={HiLocationMarker} path="/map"/>
 
         {/* Center componnent : Start and Stop tracking walk */}
-        <div onClick={handleStartStop} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
+        <div onClick={handleStartStop} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer hover:scale-115 ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
             <span className="text-xl font-medium mb-1 text-gray-800 select-none"> {isRecording ? 'Stop' : 'Start'} </span>
         </div>
 

@@ -44,10 +44,21 @@ export default function Tasks() {
     return (
         <div className="flex flex-col h-full">
                 
+            <div className="text-center mb-6 pt-6">
+                <h1 className="text-4xl font-black text-green-700 mb-2">
+                    Goals
+                </h1>
+                <p className="text-gray-600 font-medium">
+                   Assign and complete goals!
+                </p>
+            </div>
+
             <div className={`flex-1 overflow-y-auto ${showCreate ? 'blur-xs' : ''}`}>
                 {ongoingTasks.length > 0 && 
                 <div>
-                    <span className=' text-3xl font-bold px-5 mt-2 block'> Ongoing </span>
+                    <div className="border-l-4 border-green-600 bg-green-50 px-5 py-3 mt-4">
+                        <span className='text-2xl font-bold text-green-700'> Ongoing </span>
+                    </div>
                     <div className="flex flex-col px-5 divide-y divide-gray-200">
                         {ongoingTasks.map((task) => (
                             <Task key={task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => toggleTaskCompletion(task.id)}/>
@@ -57,7 +68,9 @@ export default function Tasks() {
                 
                 {completedTasks.length > 0 &&
                 <div>
-                    <span className="text-3xl font-bold px-5 mt-2 block"> Completed </span>
+                    <div className="border-l-4 border-gray-500 bg-gray-100 px-5 py-3 mt-4">
+                        <span className="text-2xl font-bold text-gray-700"> Completed </span>
+                    </div>
                     <div className="flex flex-col px-5 divide-y divide-gray-200">
                         {completedTasks.map((task) => (
                             <Task key={task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => toggleTaskCompletion(task.id)}/>

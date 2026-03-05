@@ -167,7 +167,18 @@ export default function Account() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 mt-10 w-full animate-fade-in">
+    <div className="flex flex-col items-center w-full animate-fade-in">
+
+    <div className="text-center mb-8 pt-6">
+                <h1 className="text-4xl font-black text-green-700 mb-2">
+                    Account
+                </h1>
+                <p className="text-gray-600 font-medium">
+                    Manage your account!
+                </p>
+            </div>
+
+
       <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative">
         
         {/* User's avatar */}

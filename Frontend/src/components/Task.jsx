@@ -15,7 +15,9 @@ export default function Task({name, description, completionDate, taskCompleted, 
     return (
         <div className="h-auto w-full flex flex-row justify-between rounded-lg p-1 bg-white">
             <div>
-                <h2 className="text-2xl font-semibold"> {name} </h2>
+                <h2 className={`text-2xl font-semibold ${taskCompleted ? 'line-through' : ''}`}>
+                    {name} 
+                </h2>
                 <div className='flex flex-row gap-2 text-xs text-neutral-500'>
                     <p> {description} </p>
                     <p> | </p>

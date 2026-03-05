@@ -177,8 +177,19 @@ export default function Stats() {
         }
     }
 
-    return(
-        <div className="flex flex-col justify-around w-full h-full">
+    return (
+
+        <div className="flex flex-col w-full h-full">
+
+            <div className="text-center mb-8 pt-6">
+                <h1 className="text-4xl font-black text-green-700 mb-2">
+                    Stats
+                </h1>
+                <p className="text-gray-600 font-medium">
+                    View your walking stats!
+                </p>
+            </div>
+
             <div className="flex w-full"> {/* Heartrate line graph */}
                 <Line data={heartDatasets} options={heartOps} />
             </div>
