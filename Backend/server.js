@@ -107,8 +107,9 @@ const routeModel = mongoose.model('routes', routeSchema);
 const taskSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
-  creator: { type: String, required: true },
-  assignedTo: { type: String, required: true }, // link a task to a user
+  creator: String,
+  assignedTo: String, // link a task to a user
+  dueDate: Date,
   complete: Boolean
 })
 const taskModel = mongoose.model('tasks', taskSchema);
@@ -379,16 +380,12 @@ app.get("/getRoutes", async (req, res) => {
   const userData = await routeModel.find({ username: searchName });
   res.json(userData);
 });
-
 // Add a new route
 app.post("/addRoute", async (req, res) => {
   const { coordinates, startTime, endTime, email } = req.body;
-
   console.log(email)
-
   const user = await userModel.find({ email: email });
   console.log(user)
-
   const route = new routeModel({
     // something weird with mongo means you dont need to define the id itself
     name: "a route",
@@ -404,6 +401,28 @@ app.post("/addRoute", async (req, res) => {
   await route.save();
   res.json(route);
 });
+
+app.post("/addTask", async (req, res) => {
+  const { name, description, due, email } = req.body;
+  
+  const user = await userModel.find({ email: email });
+  console.log(user)
+  const task = new taskModel({
+
+  name: name,
+  description: description,
+  creator: user.email,
+  assignedTo: user.email, 
+  dueDate: due,
+  complete: False
+  });
+  await task.save();
+  res.json(task);
+});
+
+// will need a seperate one for doctors
+
+
 
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
