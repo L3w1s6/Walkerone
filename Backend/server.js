@@ -382,7 +382,13 @@ app.get("/getRoutes", async (req, res) => {
 
 // Add a new route
 app.post("/addRoute", async (req, res) => {
-  const { coordinates, startTime, endTime } = req.body;
+  const { coordinates, startTime, endTime, email } = req.body;
+
+  console.log(email)
+
+  const user = await userModel.find({ email: email });
+  console.log(user)
+
   const route = new routeModel({
     // something weird with mongo means you dont need to define the id itself
     name: "a route",
@@ -393,7 +399,7 @@ app.post("/addRoute", async (req, res) => {
     startTime: startTime,
     endTime: endTime,
     coordinates: coordinates,
-    username: "garrytheprophet" //PLACEHOLDER
+    username: user[0]["username"] //PLACEHOLDER
   });
   await route.save();
   res.json(route);
