@@ -197,6 +197,22 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     };
   }, []);
 
+  // -------------------- Map resize on load --------------------
+
+  // Resize map when navigating to map page
+  useEffect(() => {
+    if (location.pathname === '/map' && mapRef.current && mapLoaded) {
+      // Small delay to ensure map container is visible before resizing
+      const timer = setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.resize();
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, mapLoaded]);
+
   // -------------------- Geolocation Management --------------------
 
   // Trigger geolocation whenever returning to the map page
