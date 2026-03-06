@@ -107,10 +107,9 @@ const routeModel = mongoose.model('routes', routeSchema);
 const taskSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
-  creator: String,
-  assignedTo: String, // link a task to a user
-  dueDate: Date,
-  complete: Boolean
+  completionDate: Date,
+  completed: Boolean,
+  user: String
 })
 const taskModel = mongoose.model('tasks', taskSchema);
 
@@ -226,6 +225,27 @@ app.post('/user-login', async (req, res) => {
     res.status(500).json({ message: "Server error during login." });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get all doctors
 app.get("/getDoctors", async (req, res) => {
@@ -403,19 +423,21 @@ app.post("/addRoute", async (req, res) => {
 });
 
 app.post("/addTask", async (req, res) => {
-  const { name, description, due, email } = req.body;
-  
+  const { name, description, completionDate, email } = req.body;
+
   const user = await userModel.find({ email: email });
   console.log(user)
   const task = new taskModel({
 
-  name: name,
-  description: description,
-  creator: user.email,
-  assignedTo: user.email, 
-  dueDate: due,
-  complete: False
+    name: name,
+    description: description,
+    completionDate: completionDate,
+    completed: False,
+    email: email
+
   });
+
+  console.log(task)
   await task.save();
   res.json(task);
 });
