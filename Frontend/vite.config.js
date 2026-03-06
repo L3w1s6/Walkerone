@@ -44,6 +44,14 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/doctor-register': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/doctor-login': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true
@@ -57,6 +65,10 @@ export default defineConfig({
         changeOrigin: true
       },
       '/addRoute': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/addTask': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },

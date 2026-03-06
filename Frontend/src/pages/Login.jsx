@@ -73,7 +73,7 @@ export default function Login() {
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userType', userType);
-        navigate('/map');
+        navigate(userType === 'doctor' ? '/assignedUsers' : '/map');
       } else {
         // If the backend rejects login/signup
         setError(data.message || "Failed to authenticate.");

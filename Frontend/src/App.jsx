@@ -12,6 +12,7 @@ import Tasks from './pages/Tasks';
 import RoutesPage from './pages/Routes';
 import RouteInfo from './pages/RouteInfo';
 import Leaderboard from './pages/Leaderboard';
+import AssignedUsers from './pages/AssignedUsers';
 import { io } from 'socket.io-client';
 
 export default function App() {
@@ -57,6 +58,7 @@ export default function App() {
                     <Route path="/tasks" element={<Tasks/>}/>
                     <Route path="/route" element = {<RouteInfo/>}/>
                     <Route path="/leaderboard" element = {<Leaderboard/>}/>
+                    <Route path="/assignedUsers" element = {<AssignedUsers/>}/>
                     <Route path="*" element={<div><p>Unknown path</p></div>}/>
                   </Routes>
                 </div>

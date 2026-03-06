@@ -290,7 +290,7 @@ app.post('/doctor-register', async (req, res) => {
       console.log(hashed);
 
       // create the new user 
-      const newUser = new userModel({
+      const newUser = new doctorModel({
         email: email,
         password: hashed,
         username: username,
@@ -310,10 +310,6 @@ app.post('/doctor-register', async (req, res) => {
     res.status(500).json({ message: "Server error during registration." });
   }
 });
-
-
-
-
 
 // Get all doctors
 app.get("/getDoctors", async (req, res) => {
