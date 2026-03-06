@@ -135,7 +135,7 @@ const userModel = mongoose.model('users', userSchema);
 // Sign Up / Register 
 app.post('/user-register', async (req, res) => {
   try {
-    console.log("NEW REGISTER REQUEST:", req.body);
+    console.log("NEW USER REGISTER REQUEST:", req.body);
     const { username, email, password } = req.body;
     let hashed;
 
@@ -188,7 +188,7 @@ app.post('/user-register', async (req, res) => {
 // Login 
 app.post('/user-login', async (req, res) => {
   try {
-    console.log("NEW LOGIN REQUEST:", req.body);
+    console.log("NEW USER LOGIN REQUEST:", req.body);
     const { email, password } = req.body;
 
     const user = await userModel.findOne({ email: email });
@@ -226,22 +226,90 @@ app.post('/user-login', async (req, res) => {
   }
 });
 
+app.post('/doctor-login', async (req, res) => {
+  try {
+    console.log("NEW DOCTOR LOGIN REQUEST:", req.body);
+    const { email, password } = req.body;
+
+    const doctor = await doctorModel.findOne({ email: email });
+
+    if (!doctor) {
+      console.log(" Login failed: User not found.");
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    console.log(password);
+    console.log(doctor.password);
+
+    bcrypt.compare(password.trim(), doctor.password, function (err, result) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error during login." });
+      }
+
+      if (result) {
+        console.log("Password is correct!");
+        console.log("Login successful for:", email);
+        return res.status(200).json({
+          message: "Login successful!",
+          username: doctor.username
+        });
+      } else {
+        console.log("Wrong password");
+        return res.status(401).json({ message: "Invalid email or password." });
+      }
+    });
+
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ message: "Server error during login." });
+  }
+});
+
+app.post('/doctor-register', async (req, res) => {
+  try {
+    console.log("NEW DOCTOR REGISTER REQUEST:", req.body);
+    const { username, email, password } = req.body;
+    let hashed;
+
+    // Check if a username with this email already exists 
+    const existingDoctor = await doctorModel.findOne({ email: email });
+
+    if (existingDoctor) {
+      console.log(" Registration failed: Email already in use.");
+      return res.status(400).json({ message: "Email already in use." });
+    }
+
+    bcrypt.hash(password, saltRounds, function (err, hashedpassword) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      hashed = hashedpassword
+      console.log("printing hashed")
+      console.log(hashed);
+
+      // create the new user 
+      const newUser = new userModel({
+        email: email,
+        password: hashed,
+        username: username,
+        userEmails: []
+      });
+
+      // save it to the database
+      newUser.save();
+    });
 
 
+    console.log(" New doctor saved to MongoDB successfully!");
+    res.status(200).json({ message: "doctor created successfully!" });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  } catch (error) {
+    console.error("Error saving doctor:", error);
+    res.status(500).json({ message: "Server error during registration." });
+  }
+});
 
 
 
@@ -437,7 +505,7 @@ app.post("/addTask", async (req, res) => {
 
   });
 
-  console.log(task)
+  console.log
   await task.save();
   res.json(task);
 });
