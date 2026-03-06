@@ -47,7 +47,7 @@ export default function App() {
             <UserSession>
               <div className="flex flex-col h-dvh justify-between"> {/* Internal screens */}
                 <TopNav/>
-                <div className="flex-1 h-100 overflow-y-auto bg-white relative">
+                <div className="flex-1 h-100 overflow-y-auto overscroll-contain bg-white relative">
                   {/* Keep the map active at all times (stops it from having to reload constantly which also breaks route recording) */}
                   <MapWrapper isRecording={isRecording} setIsRecording={setIsRecording} coordinates={coordinates} setCoordinates={setCoordinates} watchIdRef={watchIdRef}/>
                   <Routes>
