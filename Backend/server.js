@@ -290,7 +290,7 @@ app.post('/doctor-register', async (req, res) => {
       console.log(hashed);
 
       // create the new user 
-      const newUser = new userModel({
+      const newDoctor = new doctorModel({
         email: email,
         password: hashed,
         username: username,
@@ -298,7 +298,7 @@ app.post('/doctor-register', async (req, res) => {
       });
 
       // save it to the database
-      newUser.save();
+      newDoctor.save();
     });
 
 
@@ -476,7 +476,11 @@ app.get("/getFriendRoutes", async (req, res) => {
   res.json(friendRoutes);
 });
 
-
+// Get all doctors
+app.get("/getDoctors", async (req, res) => {
+  const doctorData = await doctorModel.find();
+  res.json(doctorData);
+});
 
 // Add a new route
 app.post("/addRoute", async (req, res) => {
