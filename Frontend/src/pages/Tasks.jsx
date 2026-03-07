@@ -5,7 +5,7 @@ const userEmail = localStorage.getItem('userEmail');
 
 async function addTask(taskData) {
     try {
-        const res = await fetch('/addRoute', {
+        const res = await fetch('/addTask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskData)
