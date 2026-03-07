@@ -315,10 +315,11 @@ app.post('/doctor-register', async (req, res) => {
 
 
 
-// Get all doctors
-app.get("/getDoctors", async (req, res) => {
-  const doctorData = await doctorModel.find();
-  res.json(doctorData);
+// Get all tasks for the logged in user
+app.get("/getTasks", async (req, res) => {
+  const {email} = req.body
+  const tasks = await taskModel.find({ email: email });
+  res.json(tasks);
 });
 
 // Send a friend request
@@ -459,15 +460,24 @@ app.post('/api/user/decline-request', async (req, res) => {
 
 // Get routes by username
 app.get("/getRoutes", async (req, res) => {
-  // uncomment this in actual use
-  //const {searchName} = req.body
-  const searchName = "garrytheprophet" // PLACEHOLDER
-  console.log(searchName)
 
-  // test version
-  const userData = await routeModel.find({ username: searchName });
+  const {username} = "req.body" 
+  console.log(username)
+
+  const userData = await routeModel.find({ username: username});
   res.json(userData);
 });
+
+app.get("/getFriendRoutes", async (req, res) => {
+
+  //an array of usernames to work with
+  const {usernames} = "req.body" 
+  const friendRoutes = await routeModel.find({ username: {$in: usernames}});
+  res.json(friendRoutes);
+});
+
+
+
 // Add a new route
 app.post("/addRoute", async (req, res) => {
   const { coordinates, startTime, endTime, email } = req.body;
@@ -509,6 +519,8 @@ app.post("/addTask", async (req, res) => {
 });
 
 // will need a seperate one for doctors
+
+
 
 
 
