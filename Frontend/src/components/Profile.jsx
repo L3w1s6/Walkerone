@@ -4,12 +4,15 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
     const profileEmail = userEmail || localStorage.getItem('userEmail'); // If userEmail is not provided, use current user's email from localStorage
     const loggedInUserEmail = localStorage.getItem('userEmail');
+    const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
+    const isDoctor = userType === 'doctor'; // Check if user is doctor
     const [isEditing, setIsEditing] = useState(false); // State for managing whether or not the user is editing their bio
     const [isSelectingPfp, setIsSelectingPfp] = useState(false); // State for managing whether or not the profile avatar menu is shown
     const [bio, setBio] = useState('Loading...');
     const [username, setUsername] = useState('Walker');
     const [pfp, setPfp] = useState('👤'); // Set default profile avatar
     const [friendsList, setFriendsList] = useState([]);
+    const [friendsData, setFriendsData] = useState([]); // Store friends with their profile data
     const [isAlreadyFriend, setIsAlreadyFriend] = useState(false);
     const [friendshipChecked, setFriendshipChecked] = useState(isOwnProfile);
     const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +49,37 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         };
         fetchProfile();
     }, [profileEmail]);
+
+    // Fetch friends' profile data (avatar and username)
+    useEffect(() => {
+        const fetchFriendsData = async () => {
+            if (!isOwnProfile || friendsList.length === 0) return;
+            
+            try {
+                const friendsProfileData = await Promise.all(
+                    friendsList.slice(0, 3).map(async (friendUsername) => {
+                        try {
+                            const response = await fetch(`/getUserData?searchName=${friendUsername}`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                return {
+                                    username: data.username,
+                                    pfp: data.pfp || '👤'
+                                };
+                            }
+                        } catch (error) {
+                            console.error(`Failed to fetch friend ${friendUsername}:`, error);
+                        }
+                        return { username: friendUsername, pfp: '👤' };
+                    })
+                );
+                setFriendsData(friendsProfileData);
+            } catch (error) {
+                console.error("Failed to load friends data", error);
+            }
+        };
+        fetchFriendsData();
+    }, [friendsList, isOwnProfile]);
 
     // Check if the viewed user is in the logged in user's friend list 
     useEffect(() => {
@@ -153,7 +187,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     };
 
     return (
-        <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative">
+        <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative mb-6">
       
             {/* User's avatar, only editable when on own profile */}
             <div className="relative w-24 h-24 mx-auto mb-4">
@@ -209,7 +243,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                         {pendingRequests.map((senderName) => (
                             <div key={senderName} className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-between shadow-sm">
                                 <p className="font-bold text-gray-800 text-sm">
-                                    @{senderName}
+                                    {senderName}
                                 </p>
                                 <div className="flex gap-2">
                                     <button onClick={() => onAcceptRequest && onAcceptRequest(senderName)} className="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors cursor-pointer">
@@ -228,23 +262,29 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             {/* Friends list, only showed on own profile */}
             {isOwnProfile && (
                 <div className="w-full mb-8">
-                    <div className="bg-orange-50 p-4 rounded-2xl w-full border border-orange-100 shadow-sm">
-                        <p className="text-xs uppercase font-black text-orange-400 mb-1">
+                    <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
+                        <p className="text-xs uppercase font-black text-green-400 mb-1">
                             Friends
                         </p>
-                        <p className="text-3xl font-black text-orange-700 mb-2">
+                        <p className="text-3xl font-black text-green-700 mb-2">
                             {friendsList.length}
                         </p>
 
                         {friendsList.length > 0 && ( // Only show list if the user has friends
-                            <div className="flex flex-wrap gap-2 justify-center mt-3 pt-3 border-t border-orange-200/50">
-                                {friendsList.slice(0, 3).map((friend) => (
-                                    <button key={friend} onClick={() => onViewProfile && onViewProfile(friend)} className="bg-orange-200 text-orange-800 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-300 transition-colors cursor-pointer">
-                                        @{friend}
+                            <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
+                                {friendsData.map((friend) => (
+                                    <button key={friend.username} onClick={() => onViewProfile && onViewProfile(friend.username)} className="w-full p-3 bg-cyan-100 rounded-xl flex items-center justify-between shadow-sm cursor-pointer transition hover:bg-cyan-200 hover:scale-105">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">{friend.pfp}</span>
+                                            <div className="text-left">
+                                                <p className="font-semibold text-gray-800 text-lg">{friend.username}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-gray-400 text-xs font-bold">View →</span>
                                     </button>
                                 ))}
                                 {friendsList.length > 3 && (
-                                    <span className="text-xs text-orange-500 font-bold self-center ml-1">
+                                    <span className="text-xs text-green-500 font-bold self-center ml-1">
                                         +{friendsList.length - 3} more
                                     </span>
                                 )}
@@ -255,7 +295,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             )}
 
             {/* Add Friend button, only shown if not on own profile and not already friends */}
-            {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && (
+            {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
                 <button onClick={handleSendViewedProfileRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                     + Add Friend
                 </button>
@@ -297,7 +337,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
             {/* Sign out button if on own profile */}
             {isOwnProfile && (
-                <button onClick={() => onSignOut && onSignOut()} className="w-full py-3 bg-red-50 text-red-500 hover:bg-red-100 font-black rounded-2xl transition-all border border-red-100 cursor-pointer">
+                <button onClick={() => onSignOut && onSignOut()} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-red-100 cursor-pointer">
                     Sign Out
                 </button>
             )}

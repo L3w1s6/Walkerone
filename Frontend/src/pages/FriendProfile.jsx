@@ -2,6 +2,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import Profile from '../components/Profile';
 
 export default function FriendProfile() { // Used for searched for users too
+  const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
+  const isDoctor = userType === 'doctor'; // Check if user is doctor
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const friendEmail = searchParams.get('email');
@@ -29,9 +31,16 @@ export default function FriendProfile() { // Used for searched for users too
         <h1 className="text-4xl font-black text-green-700 mb-2">
           {friendUsername ? `${friendUsername}'s profile` : 'Profile'}
         </h1>
+        {!isDoctor &&
         <button onClick={() => navigate('/account')} className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
           ← Back to Account
         </button>
+        }
+        {isDoctor &&
+        <button onClick={() => navigate('/assignedUsers')} className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
+          ← Back to Assigned Users
+        </button>
+        }
       </div>
 
       {friendEmail ? (
