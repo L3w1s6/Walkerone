@@ -25,6 +25,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     * Own profile: pfp (editable), username, bio (editable), friends list, friends search, sign out
     * Friend's profile: pfp, username, bio
     * Other user's profile: pfp, username, bio, add friend
+    * Own profile (doctor): unchangable pfp, username, email, users search, sign out
     * 
     * Still need to add doctor and their users, and removing friends
     */
@@ -42,13 +43,27 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     setBio(data.bio || 'No bio added yet. Click below to add one!');
                     setPfp(data.pfp || '👤');
                     setFriendsList(data.friends || []);
+                    return;
+                }
+
+                if (isOwnProfile && isDoctor) {
+                    const doctorsResponse = await fetch('/getDoctors');
+                    if (!doctorsResponse.ok) return;
+
+                    const doctors = await doctorsResponse.json();
+                    const doctor = doctors.find((doc) => doc.email === profileEmail); // Filter through doctors to find one currently logged in
+
+                    if (doctor) {
+                        setUsername(doctor.username || 'Doctor');
+                        setPfp('🧑‍⚕️');
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load profile", error);
             }
         };
         fetchProfile();
-    }, [profileEmail]);
+    }, [profileEmail, isOwnProfile, isDoctor]);
 
     // Fetch friends' profile data (avatar and username)
     useEffect(() => {
@@ -141,7 +156,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         }
     };
 
-    // Search for a user by their username
+    // Search for a user by username or email
     const handleSearchUser = async () => {
         setSearchMessage('');
         setSearchResult(null);
@@ -149,11 +164,14 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         if (!searchQuery) return;
 
         try {
-            const response = await fetch(`/getUserData?searchName=${searchQuery}`); // Send request for user with entered username
+            const queryParam = isDoctor && isOwnProfile // Doctors can search for users via email, regular users can by username
+                ? `searchEmail=${searchQuery}` 
+                : `searchName=${searchQuery}`;
+            const response = await fetch(`/getUserData?${queryParam}`);
             
             if (response.ok) {
                 const data = await response.json();
-                setSearchResult(data); // Update search relult with found user
+                setSearchResult(data); // Update search result with found user
             } else {
                 setSearchMessage('User not found.');
             }
@@ -192,12 +210,11 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             {/* User's avatar, only editable when on own profile */}
             <div className="relative w-24 h-24 mx-auto mb-4">
                 <span onClick={() => isOwnProfile && setIsSelectingPfp(!isSelectingPfp)}
-                    className={`w-full h-full bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl shadow-inner border-4 border-white ${isOwnProfile ? 'cursor-pointer hover:bg-green-200 transition-colors' : ''}`}>
+                    className={`w-full h-full bg-green-100 text-green-600 rounded-full select-none flex items-center justify-center text-5xl shadow-inner border-4 border-white ${isOwnProfile && !isDoctor ? 'cursor-pointer hover:bg-green-200 transition-colors' : ''}`}>
                     {pfp}
                 </span>
-        
                 {/* Menu containing user avatar options */}
-                {isOwnProfile && isSelectingPfp && (
+                {isOwnProfile && isSelectingPfp && !isDoctor && (
                     <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 w-48 grid grid-cols-3 gap-2">
                         {availableAvatars.map((avatar) => (
                             <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors cursor-pointer">
@@ -209,8 +226,14 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             </div>
 
         <h2 className="text-2xl font-black text-gray-800 tracking-tight">{username}</h2>
+        
+        {/* Display doctor email if viewing doctor profile */}
+        {isDoctor && (
+            <p className="text-sm text-gray-500 mb-4">{profileEmail}</p>
+        )}
       
             {/* User's bio (change to text area while editing) if on own profile */}
+            { !isDoctor &&
             <div className="mt-4 mb-8">
                 {isOwnProfile && isEditing ? (
                     <div className="space-y-3">
@@ -232,9 +255,10 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     </div>
                 )}
             </div>
+            }
 
             {/* Show list of pending friend requests if on own profile */}
-            {isOwnProfile && pendingRequests && pendingRequests.length > 0 && (
+            {isOwnProfile && pendingRequests && pendingRequests.length > 0 && !isDoctor && (
                 <div className="w-full mb-6">
                     <p className="text-xs uppercase font-black text-blue-500 mb-2 text-left">
                         Friend Requests ({pendingRequests.length})
@@ -260,7 +284,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             )}
 
             {/* Friends list, only showed on own profile */}
-            {isOwnProfile && (
+            {isOwnProfile && !isDoctor && (
                 <div className="w-full mb-8">
                     <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
                         <p className="text-xs uppercase font-black text-green-400 mb-1">
@@ -302,7 +326,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             )}
 
             {/* Search for friends, only show on own profile */}
-            {isOwnProfile && (
+            {isOwnProfile && !isDoctor && (
                 <div className="w-full mb-8">
                     <div className="bg-gray-50 p-4 rounded-2xl w-full border border-gray-100">
                         <p className="text-xs uppercase font-black text-gray-500 mb-2 text-left">
@@ -334,6 +358,43 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     </div>
                 </div>
             )}
+
+            {/* Search for users by email, only show on own profile if doctor */}
+            {isOwnProfile && isDoctor && (
+                <div className="w-full mb-8">
+                    <div className="bg-gray-50 p-4 rounded-2xl w-full border border-gray-100">
+                        <p className="text-xs uppercase font-black text-gray-500 mb-2 text-left">
+                            Find Users
+                        </p>
+                        
+                        {/* Search bar */}
+                        <div className="flex gap-2 mb-2">
+                            <input type="email" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by email..." className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
+                            <button onClick={() => handleSearchUser()} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
+                                Search
+                            </button>
+                        </div>
+
+                        {searchMessage && <p className="text-xs font-bold text-center mt-2 text-blue-500">{searchMessage}</p>}
+
+                        {/* Display the found user */}
+                        {searchResult && (
+                            <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => onViewProfile && onViewProfile(searchResult.username)}>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">{searchResult.pfp || '👤'}</span>
+                                    <div className="text-left">
+                                        <p className="font-bold text-gray-800 text-sm">{searchResult.username}</p>
+                                        <p className="text-xs text-gray-500">{searchResult.email}</p>
+                                    </div>
+                                </div>
+                                <span className="text-gray-400 text-xs font-bold">View →</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+
 
             {/* Sign out button if on own profile */}
             {isOwnProfile && (

@@ -365,18 +365,22 @@ app.post('/api/user/friend-request', async (req, res) => {
   }
 });
 
-// Get user data by username
+// Get user data by username or email
 app.get("/getUserData", async (req, res) => {
   try {
-    // Grab the search term from the URL query
     const searchName = req.query.searchName;
+    const searchEmail = req.query.searchEmail;
 
-    if (!searchName) {
-      return res.status(400).json({ message: "Please provide a username." });
+    if (!searchName && !searchEmail) {
+      return res.status(400).json({ message: "Please provide a username or email." });
     }
 
     // Return a single object instead of an array
-    const userData = await userModel.findOne({ username: searchName });
+    const userData = await userModel.findOne(
+      searchEmail 
+        ? { email: searchEmail } 
+        : { username: searchName }
+    );
 
     if (!userData) {
       return res.status(404).json({ message: "User not found" });
