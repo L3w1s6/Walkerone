@@ -6,6 +6,7 @@ export default function Account() {
   const navigate = useNavigate();
 
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [pendingDoctorRequests, setPendingDoctorRequests] = useState([]);
   const [friendsList, setFriendsList] = useState([]);
   
   const userEmail = localStorage.getItem('userEmail');
@@ -20,6 +21,7 @@ export default function Account() {
         if (response.ok) { // Load in profile info
           setFriendsList(data.friends || []);
           setPendingRequests(data.friendReq || []);
+          setPendingDoctorRequests(data.doctorReq || []);
         }
       } catch (error) {
         console.error("Failed to load profile", error);
@@ -68,6 +70,43 @@ export default function Account() {
     }
   };
 
+  // Accept doctor request
+  const handleAcceptDoctorRequest = async (senderUsername) => {
+    try {
+      const response = await fetch(`/acceptDoctors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail, senderUsername }),
+      });
+
+      if (response.ok) {
+        setPendingDoctorRequests(prev => prev.filter(name => name !== senderUsername));
+        alert(`${senderUsername} is now assigned as your doctor.`);
+      } else {
+        alert('Failed to accept doctor request.');
+      }
+    } catch (err) {
+      console.error('Error accepting doctor request:', err);
+    }
+  };
+
+  // Decline doctor request
+  const handleDeclineDoctorRequest = async (senderUsername) => {
+    try {
+      const response = await fetch(`/declineDoctors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail, senderUsername }),
+      });
+
+      if (response.ok) {
+        setPendingDoctorRequests(prev => prev.filter(name => name !== senderUsername));
+      }
+    } catch (err) {
+      console.error('Error declining doctor request:', err);
+    }
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userEmail');
@@ -99,7 +138,18 @@ export default function Account() {
         </p>
       </div>
 
-      <Profile userEmail={userEmail} isOwnProfile={true} onSignOut={handleSignOut} onViewProfile={handleViewProfile} pendingRequests={pendingRequests} onAcceptRequest={handleAcceptRequest} onDeclineRequest={handleDeclineRequest}/>
+      <Profile
+        userEmail={userEmail}
+        isOwnProfile={true}
+        onSignOut={handleSignOut}
+        onViewProfile={handleViewProfile}
+        pendingRequests={pendingRequests}
+        onAcceptRequest={handleAcceptRequest}
+        onDeclineRequest={handleDeclineRequest}
+        pendingDoctorRequests={pendingDoctorRequests}
+        onAcceptDoctorRequest={handleAcceptDoctorRequest}
+        onDeclineDoctorRequest={handleDeclineDoctorRequest}
+      />
     </div>
   );
 }

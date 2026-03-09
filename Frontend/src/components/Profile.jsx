@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, pendingRequests, onAcceptRequest, onDeclineRequest}) {
+export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
     const profileEmail = userEmail || localStorage.getItem('userEmail'); // If userEmail is not provided, use current user's email from localStorage
     const loggedInUserEmail = localStorage.getItem('userEmail');
@@ -15,6 +15,9 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [friendsData, setFriendsData] = useState([]); // Store friends with their profile data
     const [isAlreadyFriend, setIsAlreadyFriend] = useState(false);
     const [friendshipChecked, setFriendshipChecked] = useState(isOwnProfile);
+    const [isAssignedUser, setIsAssignedUser] = useState(false);
+    const [assignedChecked, setAssignedChecked] = useState(!isDoctor);
+    const [assignedDoctor, setAssignedDoctor] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResult, setSearchResult] = useState(null);
     const [searchMessage, setSearchMessage] = useState('');
@@ -26,8 +29,9 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     * Friend's profile: pfp, username, bio
     * Other user's profile: pfp, username, bio, add friend
     * Own profile (doctor): unchangable pfp, username, email, users search, sign out
+    * Assigned user's profile: pfp, username, email, list of assigned tasks (not done yet), option to assign task (not done yet)
     * 
-    * Still need to add doctor and their users, and removing friends
+    * Still need to add removing friends and being able to see email and password etc
     */
 
 
@@ -124,6 +128,70 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         fetchCurrentUser();
     }, [isOwnProfile, loggedInUserEmail, username]);
 
+    // Check if viewed user is already assigned to the logged in doctor
+    useEffect(() => {
+        const fetchAssignedStatus = async () => {
+            if (!isDoctor || isOwnProfile || profileEmail === loggedInUserEmail) {
+                setIsAssignedUser(false);
+                setAssignedChecked(true);
+                return;
+            }
+
+            setAssignedChecked(false);
+
+            try {
+                const response = await fetch('/getDoctors');
+                if (!response.ok) {
+                    setAssignedChecked(true);
+                    return;
+                }
+
+                const doctors = await response.json();
+                const currentDoctor = doctors.find((doc) => doc.email === loggedInUserEmail);
+                const assignedEmails = currentDoctor?.userEmails || [];
+                setIsAssignedUser(assignedEmails.includes(profileEmail));
+            } catch (error) {
+                console.error('Failed to check assigned status', error);
+            } finally {
+                setAssignedChecked(true);
+            }
+        };
+
+        fetchAssignedStatus();
+    }, [isDoctor, isOwnProfile, profileEmail, loggedInUserEmail]);
+
+    // If a normal user is assigned to a doctor, show that doctor on their own profile
+    useEffect(() => {
+        const fetchAssignedDoctor = async () => {
+            if (!isOwnProfile || isDoctor || !profileEmail) {
+                setAssignedDoctor(null);
+                return;
+            }
+            try {
+                const response = await fetch('/getDoctors');
+                if (!response.ok) {
+                    setAssignedDoctor(null);
+                    return;
+                }
+                const doctors = await response.json();
+                const doctor = doctors.find((doc) => (doc.userEmails || []).includes(profileEmail));
+                if (!doctor) {
+                    setAssignedDoctor(null);
+                    return;
+                }
+                setAssignedDoctor({
+                    username: doctor.username || 'Doctor',
+                    email: doctor.email || ''
+                });
+            } catch (error) {
+                console.error('Failed to fetch assigned doctor', error);
+                setAssignedDoctor(null);
+            }
+        };
+
+        fetchAssignedDoctor();
+    }, [isOwnProfile, isDoctor, profileEmail]);
+
     // Handle saving bio edits when on own profile
     const handleSaveBio = async () => {
         try {
@@ -204,6 +272,32 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         }
     };
 
+    // Send doctor assignment request from a user's profile
+    const handleSendDoctorAssignmentRequest = async () => {
+        try {
+            const response = await fetch(`/addUser`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senderEmail: loggedInUserEmail,
+                    targetUsername: username,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message || 'Failed to send doctor request.');
+                return;
+            }
+
+            alert(`Doctor request sent to ${username}.`);
+        } catch (err) {
+            console.error('Doctor request error:', err);
+            alert('Error sending doctor request.');
+        }
+    };
+
     return (
         <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative mb-6">
       
@@ -231,7 +325,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {isDoctor && (
             <p className="text-sm text-gray-500 mb-4">{profileEmail}</p>
         )}
-      
+
             {/* User's bio (change to text area while editing) if on own profile */}
             { !isDoctor &&
             <div className="mt-4 mb-8">
@@ -283,11 +377,37 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 </div>
             )}
 
+            {/* Show list of doctor requests if on own profile */}
+            {isOwnProfile && pendingDoctorRequests && pendingDoctorRequests.length > 0 && !isDoctor && (
+                <div className="w-full mb-6">
+                    <p className="text-xs uppercase font-black text-emerald-500 mb-2 text-left">
+                        Doctor Requests ({pendingDoctorRequests.length})
+                    </p>
+                    <div className="space-y-2">
+                        {pendingDoctorRequests.map((senderName) => (
+                            <div key={senderName} className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center justify-between shadow-sm">
+                                <p className="font-bold text-gray-800 text-sm">
+                                    {senderName}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button onClick={() => onAcceptDoctorRequest && onAcceptDoctorRequest(senderName)} className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors cursor-pointer">
+                                        ✓ Accept
+                                    </button>
+                                    <button onClick={() => onDeclineDoctorRequest && onDeclineDoctorRequest(senderName)} className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors cursor-pointer">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Friends list, only showed on own profile */}
             {isOwnProfile && !isDoctor && (
                 <div className="w-full mb-8">
                     <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
-                        <p className="text-xs uppercase font-black text-green-400 mb-1">
+                        <p className="text-lg uppercase font-black text-green-400 mb-1">
                             Friends
                         </p>
                         <p className="text-3xl font-black text-green-700 mb-2">
@@ -322,6 +442,20 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
                 <button onClick={handleSendViewedProfileRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                     + Add Friend
+                </button>
+            )}
+
+            {/* Remove Friend button, only shown if not on own profile and already friends */}
+            {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
+                <button  className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+                    - Remove Friend
+                </button>
+            )}
+
+            {/* Connect with user button, only shown if a doctor and not on own profile and not already connected */}
+            {!isOwnProfile && profileEmail !== loggedInUserEmail && isDoctor && assignedChecked && !isAssignedUser && (
+                <button onClick={handleSendDoctorAssignmentRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+                    + Connect with user
                 </button>
             )}
 
@@ -394,7 +528,16 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 </div>
             )}
 
-
+            {/* Assigned doctor, only shown on normal users' own profiles if they have a doctor assigned */}
+            {!isDoctor && isOwnProfile && assignedDoctor && (
+                <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm mb-6">
+                    <p className="text-lg uppercase font-black text-green-400 mb-1">
+                            Assigned Doctor
+                    </p>
+                    <p className="font-bold text-gray-800 border-t border-green-200/50">{assignedDoctor.username}</p>
+                    <p className="text-xs text-gray-600">{assignedDoctor.email}</p>
+                </div>
+            )}
 
             {/* Sign out button if on own profile */}
             {isOwnProfile && (

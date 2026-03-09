@@ -187,12 +187,7 @@ app.post('/user-login', async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    console.log(password); if (senderDoctor.userEmails.includes(targetUser.username)) {
-      return res.status(400).json({ message: "Patient already added" });
-    }
-    if (senderDoctor.userEmails.includes(targetUser.username)) {
-      return res.status(400).json({ message: "Patient request already sent" });
-    }
+    console.log(password);
     console.log(user.password);
 
     bcrypt.compare(password.trim(), user.password, function (err, result) {
@@ -515,11 +510,16 @@ app.post('/acceptDoctors', async (req, res) => {
     const { userEmail, senderUsername } = req.body;
 
     const currentUser = await userModel.findOne({ email: userEmail });
-    const senderDoctor = await userModel.findOne({ username: senderUsername });
+    const senderDoctor = await doctorModel.findOne({ username: senderUsername });
 
     if (!currentUser || !senderDoctor) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Allow for these to be empty arrays
+    currentUser.doctorReq = currentUser.doctorReq || [];
+    currentUser.doctors = currentUser.doctors || [];
+    senderDoctor.userEmails = senderDoctor.userEmails || [];
 
     // Remove the sender from the current users friend list
     currentUser.doctorReq = currentUser.doctorReq.filter(name => name !== senderUsername);
@@ -528,8 +528,8 @@ app.post('/acceptDoctors', async (req, res) => {
     if (!currentUser.doctors.includes(senderUsername)) {
       currentUser.doctors.push(senderUsername);
     }
-    if (!senderDoctor.userEmails.includes(currentUser.username)) {
-      senderDoctor.doctors.push(currentUser.username);
+    if (!senderDoctor.userEmails.includes(currentUser.email)) {
+      senderDoctor.userEmails.push(currentUser.email);
     }
 
     // Save both updated documents
@@ -551,6 +551,8 @@ app.post('/declineDoctors', async (req, res) => {
 
     const currentUser = await userModel.findOne({ email: userEmail });
     if (!currentUser) return res.status(404).json({ message: "User not found" });
+
+    currentUser.doctorReq = currentUser.doctorReq || [];
 
     // Remove the sender from the friend list
     currentUser.doctorReq = currentUser.doctorReq.filter(name => name !== senderUsername);

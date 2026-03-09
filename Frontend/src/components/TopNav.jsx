@@ -1,5 +1,5 @@
 import {Link} from 'react-router-dom';
-import {HiOutlineUserCircle, HiChevronDown} from "react-icons/hi";
+import {HiOutlineUserCircle, HiChevronDown, HiOutlineChartBar, HiClipboardCheck} from "react-icons/hi";
 
 const Item = ({name, icon: Icon, path}) => {
     return (
@@ -13,11 +13,28 @@ const Item = ({name, icon: Icon, path}) => {
 };
 
 export default function TopNav() {
+    const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
+    const isDoctor = userType === 'doctor'; // Check if user is doctor
     return (
         <div className="flex justify-evenly pt-2 pb-2 bg-cyan-100">
-            <Item name="Goals" icon={HiChevronDown} path="/tasks"/>
-            <Item name="Stats" icon={HiChevronDown} path="/stats"/>
-            <Item name="Account" icon={HiOutlineUserCircle} path="/account"/>
+            {isDoctor ? (
+                <>
+                    <div className="text-center">
+                        <h1 className="text-4xl font-black text-green-700 mb-2">
+                            Doctor Dashboard
+                        </h1>
+                        <p className="text-gray-600 font-medium">
+                            Manage your patients
+                        </p>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <Item name="Goals" icon={HiClipboardCheck} path="/tasks"/>
+                    <Item name="Stats" icon={HiOutlineChartBar} path="/stats"/>
+                    <Item name="Account" icon={HiOutlineUserCircle} path="/account"/>
+                </>
+            )}
         </div>
     )
 };

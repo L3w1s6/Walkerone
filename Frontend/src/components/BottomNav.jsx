@@ -1,5 +1,5 @@
 import {Link, useNavigate, useLocation} from 'react-router-dom';
-import {HiLocationMarker, HiChevronUp} from "react-icons/hi";// Using HeroIcons to match TopNav
+import {HiLocationMarker, HiMap, HiUsers, HiUser} from "react-icons/hi";// Using HeroIcons to match TopNav
 
 const Item = ({name, icon: Icon, path}) => {
     return (
@@ -15,6 +15,8 @@ const Item = ({name, icon: Icon, path}) => {
 export default function BottomNav({ isRecording }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
+    const isDoctor = userType === 'doctor'; // Check if user is doctor
 
     const handleStartStop = () => {
         if (!isRecording) {
@@ -31,16 +33,29 @@ export default function BottomNav({ isRecording }) {
   return (
     // The Footer Container
     <div className="flex justify-evenly bg-green-300 pt-2 pb-2">
-        {/* Left component : Map */}
-        <Item name="Map" icon={HiLocationMarker} path="/map"/>
+        {isDoctor ? (
+            <>
+               {/* Left component : Assigned users */}
+                <Item name="Users" icon={HiUsers} path="/assignedUsers"/>
 
-        {/* Center componnent : Start and Stop tracking walk */}
-        <div onClick={handleStartStop} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer hover:scale-115 ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
-            <span className="text-xl font-medium mb-1 text-gray-800 select-none"> {isRecording ? 'Stop' : 'Start'} </span>
-        </div>
+                {/* Right component: Account */}
+                <Item name="Profile" icon={HiUser} path="/account"/>
+            </>
+            ) : (
+                <>
+                    {/* Left component : Map */}
+                    <Item name="Map" icon={HiMap} path="/map"/>
 
-        {/* Right component: Routes */}
-        <Item name="Routes" icon={HiChevronUp} path="/routes2"/>
+                    {/* Center componnent : Start and Stop tracking walk */}
+                    <div onClick={handleStartStop} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer hover:scale-115 ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
+                        <span className="text-xl font-medium mb-1 text-gray-800 select-none"> {isRecording ? 'Stop' : 'Start'} </span>
+                    </div>
+
+                    {/* Right component: Routes */}
+                    <Item name="Routes" icon={HiLocationMarker} path="/routes2"/>
+                </>
+            )
+        }
     </div>
   );
 }

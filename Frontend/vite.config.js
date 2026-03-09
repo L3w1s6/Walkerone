@@ -87,6 +87,18 @@ export default defineConfig({
       '/getDoctors': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/addUser': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/acceptDoctors': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/declineDoctors': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   }
