@@ -7,50 +7,6 @@ import bcrypt from "bcrypt";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
-
-// things which need to be modelled
-
-// users
-// email, password (FR 1.1)
-// username, bio, pfp (FR 1.2)
-// friends (list of users) (FR 1.3)
-// biomarkers (steps, heart rate, calories burnt) (FR 2.1)
-// although, how do you estimate heart rate? cant really use online data sets, some research has to be done
-// list of routes (FR 4.1-3, relationship to routes)
-// list of tasks (FR 4.5, relationship to doctors)
-
-// routes 
-// route name, description, category (FR 4.3)
-// route "markers"
-// if color changing is implemented, markers should be placed each time the color changes, makes it easier to identify "sections"
-// probably would need this also for elevation? not sure
-// time elapsed, distance, elevation (FR 2.7)
-
-// tasks (or personal activities)
-// name
-// date 
-
-//doctors
-// name, password, email, list of tasks (relationship to users)
-
-// cant be bothered finding requirement numbers for the rest of these
-// will stick bcrypt and that stuff on once the basic stuff is figured out
-
-// Create, Read, Update, Delete (CRUD) operations
-
-// add users (C)
-// edit user information (U)
-// delete user (D)
-// add user as friend? (U)
-// view user info (R)       done
-// view user tasks (R)      
-// add routes (C)       done
-// view routes (R)      done
-// delete routes (D)
-
-// mongodb is in fact, a piece of crud
-// i hate it.
-
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -126,11 +82,44 @@ const userSchema = new mongoose.Schema({
   //caloriesBurnt: Number,
   //stepCount: Number,
   friends: [{ type: String }], // a user may have many friends, or none at all
+  doctors: [{ type: String }], // why not, a user can have many doctors
+  doctorReq: [{ type: String }]
 })
 const userModel = mongoose.model('users', userSchema);
 
 
 
+// Get user data by username or email
+app.get("/getUserData", async (req, res) => {
+  try {
+    const searchName = req.query.searchName;
+    const searchEmail = req.query.searchEmail;
+
+    if (!searchName && !searchEmail) {
+      return res.status(400).json({ message: "Please provide a username or email." });
+    }
+
+    // Return a single object instead of an array
+    const userData = await userModel.findOne(
+      searchEmail
+        ? { email: searchEmail }
+        : { username: searchName }
+    );
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send the found user back to React
+    res.status(200).json(userData);
+
+  } catch (error) {
+    console.error("Lookup error:", error);
+    res.status(500).json({ message: "Server error during lookup" });
+  }
+});
+
+/* - USER FUNCTIONS - */
 
 // Sign Up / Register 
 app.post('/user-register', async (req, res) => {
@@ -198,7 +187,12 @@ app.post('/user-login', async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    console.log(password);
+    console.log(password); if (senderDoctor.userEmails.includes(targetUser.username)) {
+      return res.status(400).json({ message: "Patient already added" });
+    }
+    if (senderDoctor.userEmails.includes(targetUser.username)) {
+      return res.status(400).json({ message: "Patient request already sent" });
+    }
     console.log(user.password);
 
     bcrypt.compare(password.trim(), user.password, function (err, result) {
@@ -225,6 +219,54 @@ app.post('/user-login', async (req, res) => {
     res.status(500).json({ message: "Server error during login." });
   }
 });
+// Get user email for editing bio
+app.get('/api/user/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    const user = await userModel.findOne({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send back the user data (including the bio!)
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Update user bio or pfp
+app.put('/api/user/update', async (req, res) => {
+  try {
+    const { email, bio, pfp } = req.body;
+
+    const updateData = {};
+    if (bio !== undefined) updateData.bio = bio;
+    if (pfp !== undefined) updateData.pfp = pfp;
+
+    // Find the user by email and update them
+    const updatedUser = await userModel.findOneAndUpdate(
+      { email: email },
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(` Profile updated in cloud for: ${email}`);
+    res.status(200).json({ message: "Profile updated!", user: updatedUser });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ message: "Server error updating profile" });
+  }
+});
+
+
+/* - DOCTOR LOGIN/REGISTRATION - */
 
 app.post('/doctor-login', async (req, res) => {
   try {
@@ -301,7 +343,6 @@ app.post('/doctor-register', async (req, res) => {
       newDoctor.save();
     });
 
-
     console.log(" New doctor saved to MongoDB successfully!");
     res.status(200).json({ message: "doctor created successfully!" });
 
@@ -312,15 +353,22 @@ app.post('/doctor-register', async (req, res) => {
 });
 
 
+// TODO
+
+//Still need to add doctor and their users, and removing friends
+
+//assign task function 
+// check if the username to add a task to is a patient of that doctor
+// add the task to that patient if it
+// decline if nots
 
 
 
-// Get all tasks for the logged in user
-app.get("/getTasks", async (req, res) => {
-  const {email} = req.body
-  const tasks = await taskModel.find({ email: email });
-  res.json(tasks);
-});
+
+
+
+
+/* - FRIEND SYSTEM - */
 
 // Send a friend request
 app.post('/api/user/friend-request', async (req, res) => {
@@ -365,35 +413,7 @@ app.post('/api/user/friend-request', async (req, res) => {
   }
 });
 
-// Get user data by username or email
-app.get("/getUserData", async (req, res) => {
-  try {
-    const searchName = req.query.searchName;
-    const searchEmail = req.query.searchEmail;
 
-    if (!searchName && !searchEmail) {
-      return res.status(400).json({ message: "Please provide a username or email." });
-    }
-
-    // Return a single object instead of an array
-    const userData = await userModel.findOne(
-      searchEmail 
-        ? { email: searchEmail } 
-        : { username: searchName }
-    );
-
-    if (!userData) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Send the found user back to React
-    res.status(200).json(userData);
-
-  } catch (error) {
-    console.error("Lookup error:", error);
-    res.status(500).json({ message: "Server error during lookup" });
-  }
-});
 
 // ACCEPT REQUEST 
 app.post('/api/user/accept-request', async (req, res) => {
@@ -450,36 +470,129 @@ app.post('/api/user/decline-request', async (req, res) => {
   }
 });
 
-// Get user data by username
-// hmm, if profile sharing is implemented, only select fields should be returned when querying users which arent your own
-// app.get("/getUserData", async (req, res) => {
-//     // uncomment this in actual use
-//     //const {searchName} = req.body
-//     const searchName = "johnny silverhand" // PLACEHOLDER
-//     console.log(searchName)
-//     // test version
-//     const userData = await userModel.find({ username: searchName });
-//     res.json(userData);
-// });
+/* - DOCTOR/PATIENT FUNCTIONS - */
+
+// let a doctor add a user
+app.post('/addUser', async (req, res) => {
+  try {
+    const { senderEmail, targetUsername } = req.body;
+
+    // Find the person you want to add
+    const targetUser = await userModel.findOne({ username: targetUsername });
+    if (!targetUser) {
+      return res.status(404).json({ message: "Target user not found" });
+    }
+
+    // Find the sender to get your username
+    const senderDoctor = await doctorModel.findOne({ email: senderEmail });
+    if (!senderDoctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // Check if you are already friends, or if a request is already pending
+    if (targetUser.doctors.includes(senderDoctor.username)) {
+      return res.status(400).json({ message: "Already added patient" });
+    }
+    if (targetUser.doctorReq.includes(senderDoctor.username)) {
+      return res.status(400).json({ message: "Patient request already sent" });
+    }
+
+    targetUser.doctorReq.push(senderDoctor.username);
+    await targetUser.save(); // Save the updated target user to MongoDB
+
+    console.log(` Patient request sent from ${senderDoctor.username} to ${targetUsername}`);
+    res.status(200).json({ message: "Friend request sent successfully!" });
+
+  } catch (error) {
+    console.error("Error sending Patient request:", error);
+    res.status(500).json({ message: "Server error while sending request" });
+  }
+});
+
+// ACCEPT REQUEST 
+app.post('/acceptDoctors', async (req, res) => {
+  try {
+    const { userEmail, senderUsername } = req.body;
+
+    const currentUser = await userModel.findOne({ email: userEmail });
+    const senderDoctor = await userModel.findOne({ username: senderUsername });
+
+    if (!currentUser || !senderDoctor) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove the sender from the current users friend list
+    currentUser.doctorReq = currentUser.doctorReq.filter(name => name !== senderUsername);
+
+    // Add each other to the friends list
+    if (!currentUser.doctors.includes(senderUsername)) {
+      currentUser.doctors.push(senderUsername);
+    }
+    if (!senderDoctor.userEmails.includes(currentUser.username)) {
+      senderDoctor.doctors.push(currentUser.username);
+    }
+
+    // Save both updated documents
+    await currentUser.save();
+    await senderDoctor.save();
+
+    console.log(`${currentUser.username} accepted ${senderUsername}'s request`);
+    res.status(200).json({ message: "Doctor request accepted" });
+  } catch (error) {
+    console.error("Error accepting request:", error);
+    res.status(500).json({ message: "Server error while accepting request" });
+  }
+});
+
+// DECLINE REQUEST
+app.post('/declineDoctors', async (req, res) => {
+  try {
+    const { userEmail, senderUsername } = req.body;
+
+    const currentUser = await userModel.findOne({ email: userEmail });
+    if (!currentUser) return res.status(404).json({ message: "User not found" });
+
+    // Remove the sender from the friend list
+    currentUser.doctorReq = currentUser.doctorReq.filter(name => name !== senderUsername);
+    await currentUser.save();
+
+    console.log(` ${currentUser.username} declined ${senderUsername}'s request`);
+    res.status(200).json({ message: "Friend request declined" });
+  } catch (error) {
+    console.error("Error declining request:", error);
+    res.status(500).json({ message: "Server error while declining request" });
+  }
+});
+
+
 
 // Get routes by username
 app.get("/getRoutes", async (req, res) => {
 
-  const {username} = "req.body" 
-  console.log(username)
+  try {
+    const { username } = "req.body"
+    console.log(username)
 
-  const userData = await routeModel.find({ username: username});
-  res.json(userData);
+    const userData = await routeModel.find({ username: username });
+    res.json(userData);
+  } catch (err) {
+    console.log(err)
+  }
 });
 
 app.get("/getFriendRoutes", async (req, res) => {
 
-  //an array of usernames to work with
-  const {usernames} = "req.body" 
-  const friendRoutes = await routeModel.find({ username: {$in: usernames}});
-  res.json(friendRoutes);
+  try {
+    const { usernames } = "req.body"
+    const friendRoutes = await routeModel.find({ username: { $in: usernames } });
+    res.json(friendRoutes);
+  } catch (err) {
+    console.log(err)
+  }
 });
 
+// this was a test function, not quite sure why its actually being used
+// since theres no point in checking the user is a doctor first... since users cant add doctors anyway
 // Get all doctors
 app.get("/getDoctors", async (req, res) => {
   const doctorData = await doctorModel.find();
@@ -526,11 +639,39 @@ app.post("/addTask", async (req, res) => {
   res.json(task);
 });
 
+// add a task with usernames instead of emails, similar to above
+app.post("/doctorAddTask", async (req, res) => {
+  const { name, description, completionDate, username } = req.body;
+
+  const user = await userModel.find({ username: username });
+  console.log(user)
+  const task = new taskModel({
+
+    name: name,
+    description: description,
+    completionDate: completionDate,
+    completed: false,
+    email: user.email
+
+  });
+  await task.save();
+  res.json(task);
+});
+
 // will need a seperate one for doctors
 
+// Get all tasks for the logged in user
+app.get("/getTasks", async (req, res) => {
+  try {
+    const { email } = req.body
+    const tasks = await taskModel.find({ email: email });
+    res.json(tasks);
+  } catch (err) {
+    console.log(err)
+  }
 
 
-
+});
 
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
@@ -560,51 +701,6 @@ app.get("/showRoutesByTime/:username", async (req, res) => {
   res.json(routes);
 });
 
-// Get user email for editing bio
-app.get('/api/user/:email', async (req, res) => {
-  try {
-    const userEmail = req.params.email;
-    const user = await userModel.findOne({ email: userEmail });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Send back the user data (including the bio!)
-    res.status(200).json(user);
-  } catch (error) {
-    console.error("Error fetching profile:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Update user bio or pfp
-app.put('/api/user/update', async (req, res) => {
-  try {
-    const { email, bio, pfp } = req.body;
-
-    const updateData = {};
-    if (bio !== undefined) updateData.bio = bio;
-    if (pfp !== undefined) updateData.pfp = pfp;
-
-    // Find the user by email and update them
-    const updatedUser = await userModel.findOneAndUpdate(
-      { email: email },
-      { $set: updateData },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    console.log(` Profile updated in cloud for: ${email}`);
-    res.status(200).json({ message: "Profile updated!", user: updatedUser });
-  } catch (error) {
-    console.error("Update error:", error);
-    res.status(500).json({ message: "Server error updating profile" });
-  }
-});
 
 // Test endpoint
 app.get('/test', (req, res) => {
