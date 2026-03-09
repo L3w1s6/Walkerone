@@ -65,7 +65,7 @@ const taskSchema = new mongoose.Schema({
   description: String,
   completionDate: Date,
   completed: Boolean,
-  user: String
+  email: String
 })
 const taskModel = mongoose.model('tasks', taskSchema);
 
@@ -96,6 +96,8 @@ app.get("/getUserData", async (req, res) => {
     const searchEmail = req.query.searchEmail;
 
     if (!searchName && !searchEmail) {
+      console.log(searchName)
+      console.log(searchEmail)
       return res.status(400).json({ message: "Please provide a username or email." });
     }
 
@@ -358,11 +360,6 @@ app.post('/doctor-register', async (req, res) => {
 // decline if nots
 
 
-
-
-
-
-
 /* - FRIEND SYSTEM - */
 
 // Send a friend request
@@ -623,11 +620,17 @@ app.post("/addRoute", async (req, res) => {
   res.json(route);
 });
 
+
+// doctors should be able to use this one as well to assign a task to a patient
+// the passed in email should be different depending on the patient
 app.post("/addTask", async (req, res) => {
   const { name, description, completionDate, email } = req.body;
-
   const user = await userModel.find({ email: email });
+
+  console.log("adding task for")
+  console.log(email)
   console.log(user)
+  console.log(user.username)
   const task = new taskModel({
 
     name: name,
@@ -635,32 +638,10 @@ app.post("/addTask", async (req, res) => {
     completionDate: completionDate,
     completed: false,
     email: email
-
   });
   await task.save();
   res.json(task);
 });
-
-// add a task with usernames instead of emails, similar to above
-app.post("/doctorAddTask", async (req, res) => {
-  const { name, description, completionDate, username } = req.body;
-
-  const user = await userModel.find({ username: username });
-  console.log(user)
-  const task = new taskModel({
-
-    name: name,
-    description: description,
-    completionDate: completionDate,
-    completed: false,
-    email: user.email
-
-  });
-  await task.save();
-  res.json(task);
-});
-
-// will need a seperate one for doctors
 
 // Get all tasks for the logged in user
 app.get("/getTasks", async (req, res) => {
@@ -671,7 +652,6 @@ app.get("/getTasks", async (req, res) => {
   } catch (err) {
     console.log(err)
   }
-
 
 });
 
