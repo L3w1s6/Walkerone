@@ -1,5 +1,5 @@
 import {Link, useNavigate, useLocation} from 'react-router-dom';
-import {HiLocationMarker, HiMap, HiUsers, HiUser} from "react-icons/hi";// Using HeroIcons to match TopNav
+import {HiLocationMarker, HiMap, HiUsers, HiOutlineUserCircle} from "react-icons/hi";// Using HeroIcons to match TopNav
 
 const Item = ({name, icon: Icon, path}) => {
     return (
@@ -39,7 +39,7 @@ export default function BottomNav({ isRecording }) {
                 <Item name="Users" icon={HiUsers} path="/assignedUsers"/>
 
                 {/* Right component: Account */}
-                <Item name="Profile" icon={HiUser} path="/account"/>
+                <Item name="Profile" icon={HiOutlineUserCircle} path="/account"/>
             </>
             ) : (
                 <>

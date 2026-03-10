@@ -60,6 +60,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/getTasks': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/getRoutes': {
         target: 'http://localhost:8000',
         changeOrigin: true

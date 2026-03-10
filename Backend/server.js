@@ -66,7 +66,8 @@ const taskSchema = new mongoose.Schema({
   description: String,
   completionDate: Date,
   completed: Boolean,
-  email: String
+  email: String,
+  assignedBy: String
 })
 const taskModel = mongoose.model('tasks', taskSchema);
 
@@ -625,7 +626,7 @@ app.post("/addRoute", async (req, res) => {
 // doctors should be able to use this one as well to assign a task to a patient
 // the passed in email should be different depending on the patient
 app.post("/addTask", async (req, res) => {
-  const { name, description, completionDate, email } = req.body;
+  const { name, description, completionDate, email, assignedBy } = req.body;
   const user = await userModel.find({ email: email });
 
   console.log("adding task for")
@@ -638,7 +639,8 @@ app.post("/addTask", async (req, res) => {
     description: description,
     completionDate: completionDate,
     completed: false,
-    email: email
+    email: email,
+    assignedBy: assignedBy
   });
   await task.save();
   res.json(task);
@@ -649,7 +651,7 @@ app.post("/addTask", async (req, res) => {
 // Get all tasks for the logged in user
 app.get("/getTasks", async (req, res) => {
   try {
-    const { email } = req.body
+    const { email } = req.query
     const tasks = await taskModel.find({ email: email });
     res.json(tasks);
   } catch (err) {

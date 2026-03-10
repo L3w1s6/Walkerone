@@ -1,5 +1,5 @@
 import {Link} from 'react-router-dom';
-import {HiOutlineUserCircle, HiChevronDown, HiOutlineChartBar, HiClipboardCheck} from "react-icons/hi";
+import {HiOutlineUserCircle, HiOutlineChartBar, HiClipboardCheck} from "react-icons/hi";
 
 const Item = ({name, icon: Icon, path}) => {
     return (

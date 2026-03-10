@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import Task from "./Task";
+import CreateTaskMenu from "./CreateTaskMenu";
 
 export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
-    const profileEmail = userEmail || localStorage.getItem('userEmail'); // If userEmail is not provided, use current user's email from localStorage
+    const profileEmail = userEmail || localStorage.getItem("userEmail"); // If userEmail is not provided, use current user's email from localStorage
     const loggedInUserEmail = localStorage.getItem('userEmail');
     const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
     const isDoctor = userType === 'doctor'; // Check if user is doctor
@@ -22,6 +24,11 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [searchResult, setSearchResult] = useState(null);
     const [searchMessage, setSearchMessage] = useState('');
     const availableAvatars = ['👤', '🦊', '🐻', '🦁', '🐸', '🐼', '🐯', '🐰', '🦅'];   // The list of avatars 
+    const [assignedUserTasks, setAssignedUserTasks] = useState([]);
+    const [showCreate, setShowCreate] = useState(false); // State for showing/hiding the creation menu
+    const [taskName, setTaskName] = useState(''); // State for task name when assigning one
+    const [taskDescription, setTaskDescription] = useState(''); // State for task description when assigning one
+    const [taskDate, setTaskDate] = useState(''); // State for task completion date when assigning one
 
     /*
     * Using this instead of just the account page so that different types of profiles can be loaded with just some small changes in content,
@@ -298,6 +305,65 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         }
     };
 
+    // Show task create menu when assign task button is pressed
+    const createTask = () => {
+        setShowCreate(true);
+    };
+
+    // Get assigned tasks for the assigned user's profile being viewed
+    const fetchAssignedUserTasks = async () => {
+        if (!isAssignedUser || isOwnProfile || !profileEmail) {
+            setAssignedUserTasks([]); // Reset assigned tasks to blank if viewing own profile or a non assigned user
+            return;
+        }
+
+        try {
+            const response = await fetch(`/getTasks?email=${encodeURIComponent(profileEmail)}`); // Get all tasks for assigned user
+            if (response.ok) {
+                const tasks = await response.json();
+                const filtered = tasks.filter((task) => task.assignedBy === loggedInUserEmail);  // Filter for tasks assigned by the logged in doctor
+                setAssignedUserTasks(filtered);
+            }
+        } catch (error) {
+            console.error('Failed to fetch assigned user tasks', error);
+        }
+    };
+
+    const handleTaskSubmit = async (e) => {
+        e.preventDefault();
+        if (taskName.trim()) { // If there's a task name
+            const newTask = {name: taskName, description: taskDescription, completionDate: taskDate, completed: false, email: profileEmail, assignedBy: loggedInUserEmail};
+
+            try {
+                const response = await fetch('/addTask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTask)
+                });
+
+                if (!response.ok) {
+                    alert('couldnt add task');
+                    return;
+                }
+
+                await response.json();
+                await fetchAssignedUserTasks();
+                setTaskName(''); // Reset task name, description and date and hide the creation menu
+                setTaskDescription('');
+                setTaskDate('');
+                setShowCreate(false);
+                alert('added task');
+            } catch (err) {
+                alert(err);
+            }
+        }
+    };
+
+    // Fetch tasks for the viewed assigned user
+    useEffect(() => {
+        fetchAssignedUserTasks();
+    }, [isAssignedUser, isOwnProfile, profileEmail, loggedInUserEmail]);
+
     return (
         <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative mb-6">
       
@@ -438,6 +504,26 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 </div>
             )}
 
+            {/* List of doctor assigned tasks, only shown if logged in as a doctor and on an assigned user's profile}*/}
+            {!isOwnProfile && isDoctor && assignedChecked && isAssignedUser && (
+                <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
+                    <h1 className="text-lg uppercase font-black text-green-400 mb-1"> Assigned Goals </h1>
+                    <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
+                        {assignedUserTasks.map((task) => (
+                            <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => {}} />
+                        ))}
+                    </div>
+
+                    {/* Button for assigning a task */}
+                    <CreateTaskMenu showCreate={showCreate} handleSubmit={handleTaskSubmit} taskName={taskName} setTaskName={setTaskName} taskDescription={taskDescription} setTaskDescription={setTaskDescription} taskDate={taskDate} setTaskDate={setTaskDate} setShowCreate={setShowCreate}/>
+                    <div className="mb-4 mt-2 px-5 text-center">
+                        <button onClick={createTask} className="bg-white px-6 py-4 text-2xl cursor-pointer transition active:scale-95 rounded-lg hover:bg-gray-200 m-2">
+                            Assign Task
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Add Friend button, only shown if not on own profile and not already friends */}
             {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
                 <button onClick={handleSendViewedProfileRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
@@ -447,7 +533,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
             {/* Remove Friend button, only shown if not on own profile and already friends */}
             {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
-                <button  className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+                <button className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                     - Remove Friend
                 </button>
             )}
