@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { io } from 'socket.io-client';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN; // Get mapbox token from .env file (use public key later)
 
@@ -13,8 +14,11 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const [error, setError] = useState(null); // State for storing errors
   const [userLocation, setUserLocation] = useState(null); // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [liveStats, setLiveStats] = useState({ steps: 0, distance: 0, calories: 0, points: 0 });
 
   const userEmail = localStorage.getItem('userEmail');
+  const username = localStorage.getItem('username');
 
   /*
   * How It Works:
@@ -25,6 +29,29 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   * 
   * Note: The map is always active via a hidden MapWrapper component at the root (becomes unhidden on this page), which is needed to allow routes to keep drawing when not on the map page
   */
+
+
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:8000');
+    setSocket(newSocket);
+
+    // Listen for live stats updates (every 3-5 seconds while walking)
+    newSocket.on('liveStats', (data) => {
+      setLiveStats(data);
+    });
+
+    // Listen for route saved confirmation
+    newSocket.on('routeSaved', (data) => {
+      if (data.success) {
+        alert(`Route saved!\n${data.route.stepCount} steps\n${data.route.distance.toFixed(2)} km\n${data.route.caloriesBurned} calories`);
+      } else {
+        alert('Error: ' + data.message);
+      }
+    });
+
+    return () => newSocket.disconnect();
+  }, []);
 
   // -------------------- Backend Functions --------------------
 
@@ -318,15 +345,29 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
     setIsRecording(true); // Update parent state
     setCoordinates([]); // Clear previous route data
+    setLiveStats({ steps: 0, distance: 0, calories: 0, points: 0 });
 
     watchIdRef.current = navigator.geolocation.watchPosition( // Every time the user's GPS location updates
       (position) => {
         const { latitude, longitude } = position.coords;
-        setUserLocation({ lat: latitude, long: longitude }); // Update user location
+        setUserLocation({ lat: latitude, long: longitude });
 
-        setCoordinates(prev =>
-          [...prev, { lat: latitude, long: longitude, timestamp: Date.now() }] // Append new location coordinates onto the end of the coordinates array
-        );
+        // Used to help calculate steps, cal, and distance
+        const newCoordinate = { 
+          lat: latitude, 
+          long: longitude, 
+          timestamp: new Date()
+        };
+
+        setCoordinates(prev => [...prev, newCoordinate]);
+
+        // Send to backend every 3-5 seconds
+        if (socket) {
+          socket.emit('liveCoordinate', {
+            username: username,
+            coordinate: newCoordinate
+          });
+        }
 
         if (mapRef.current) {
           mapRef.current.flyTo({ center: [longitude, latitude], zoom: 15 }); // Center map on new user location
@@ -354,7 +395,11 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     }
     setIsRecording(false); // Update parent state
 
-    // Use functional setState to get current coordinates value
+    // Tell backend to calculate step count and save
+    if (socket) {
+      socket.emit('saveRoute', { username: username });
+    }
+
     setCoordinates(currentCoords => {
       if (currentCoords.length > 0) {
         const route = {
@@ -374,14 +419,15 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
         //
 
-        addRoute(route).then((ok) => {
+       /* addRoute(route).then((ok) => {
           if (ok) {
             alert("data added");
           } else {
             alert ("data not added");
           }
 
-        });
+        }); */ // Can be added back if needed, but was causing duplicate data saves in db
+
       }
 
       return []; // Clear route data/line on map
@@ -411,9 +457,21 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
     setUserLocation({ lat: newLat, long: newlong });
 
-    setCoordinates(prev =>
-      [...prev, { lat: newLat, long: newlong, timestamp: Date.now() }] // Append new coordinates onto the end of coordinate array
-    );
+    const newCoordinate = { 
+      lat: newLat, 
+      long: newlong, 
+      timestamp: new Date()
+    };
+
+    setCoordinates(prev => [...prev, newCoordinate]);
+
+    // Send to backend if recording
+    if (isRecording && socket) {
+      socket.emit('liveCoordinate', {
+        username: username,
+        coordinate: newCoordinate
+      });
+    }
 
     if (mapRef.current) {
       mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 }); // Update map with new coordinates as center
@@ -435,9 +493,20 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
       {/* Route Stats */}
       {isRecording && (
-        <div style={{ position: 'absolute', top: '20px', right: '20px', }}>
-          <p>Recording...</p>
-          <p>Points: {coordinates.length}</p>
+        <div style={{ 
+          position: 'absolute', 
+          top: '20px', 
+          right: '20px', 
+          background: 'white', 
+          padding: '15px', 
+          borderRadius: '10px', // Round edges for box instead of sharp
+        }}>
+          <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '5px 0' }}>Recording...</p>
+          <p style={{ margin: '5px 0' }}>Steps: <strong>{liveStats.steps}</strong></p>
+          <p style={{ margin: '5px 0' }}>Distance: <strong>{liveStats.distance.toFixed(2)} km</strong></p> 
+          <p style={{ margin: '5px 0' }}>Calories: <strong>{liveStats.calories}</strong></p>
+          <p style={{ margin: '5px 0', fontSize: '12px', color: '#666' }}>Points: {liveStats.points}</p>
+          <p style={{ margin: '5px 0', fontSize: '12px', color: '#666' }}>Socket: {socket ? 'on' : 'off'}</p>
         </div>
       )}
 

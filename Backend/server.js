@@ -16,6 +16,7 @@ const URI = process.env.URI;
 const PORT = process.env.PORT;
 // bcrypt password hashing
 const saltRounds = 10;
+const activeRoutes = {};
 
 mongoose.connect(URI).then(() => {
   console.log("mongoDB databases connected");
@@ -643,6 +644,8 @@ app.post("/addTask", async (req, res) => {
   res.json(task);
 });
 
+// will need a seperate one for doctors
+
 // Get all tasks for the logged in user
 app.get("/getTasks", async (req, res) => {
   try {
@@ -683,7 +686,6 @@ app.get("/showRoutesByTime/:username", async (req, res) => {
   res.json(routes);
 });
 
-
 // Test endpoint
 app.get('/test', (req, res) => {
   res.json({ msg: 'Hello from backend' });
@@ -693,7 +695,77 @@ app.get('/test', (req, res) => {
 io.on("connection", (socket) => {
   console.log("Connected:", socket.id);
 
-  // Add a new route
+
+  // Receive live coordinates and send back real-time stats
+  socket.on("liveCoordinate", (data) => {
+    const { username, coordinate } = data;
+    
+    if (!activeRoutes[username]) {
+      activeRoutes[username] = {
+        coordinates: [],
+        startTime: new Date().toISOString() // Converts date to an int, just easier in mongodb searching and sorting
+      };
+    }
+    
+    activeRoutes[username].coordinates.push(coordinate);
+    /*
+    numCoords is used to count how many coordinates there are (lat, long) then by how many coordinates there are, 
+    that amount gets calculated, so if 3 sets of coordinates then its 3 x 0.1 = 0.3km, 0.3 * 1377 = 413 steps and then 0.3 x 60 = 18 cals burned
+     */
+    // Calculate current stats in real-time, Calculated for average height (5'9)
+    const numCoords = activeRoutes[username].coordinates.length;
+    const distance = (numCoords * 0.1); // in km
+    const steps = Math.round(distance * 1377); // 1377 steps per km
+    const calories = Math.round(distance * 60); // cals burned per km
+    
+    console.log(`${username}: ${numCoords} coords, ${steps} steps`);
+    
+    // Send current stats back to frontend
+    socket.emit("liveStats", { 
+      steps: steps,
+      distance: distance,
+      calories: calories,
+      points: numCoords
+    });
+  });
+
+  // Save route when user stops
+  socket.on("saveRoute", async (data) => {
+    const { username } = data;
+    
+    if (!activeRoutes[username]) {
+      return socket.emit("routeSaved", { success: false, message: "No data" });
+    }
+
+    const routeData = activeRoutes[username];
+    const numCoords = routeData.coordinates.length;
+    
+    //Calculated for average height (5'9)
+    const distance = (numCoords * 0.1); // in km 
+    const steps = Math.round(distance * 1377); // 1377 steps per km 
+    const calories = Math.round(distance * 60); // cals burned per km
+    
+    const route = new routeModel({
+      name: "a route",
+      distance: distance,
+      caloriesBurned: calories,
+      elevationGain: 0,
+      stepCount: steps,
+      startTime: routeData.startTime,
+      endTime: new Date().toISOString(),
+      coordinates: routeData.coordinates,
+      username: username
+    });
+    
+    await route.save();
+    delete activeRoutes[username];
+    
+    console.log(`${username}: ${distance.toFixed(2)}km, ${steps} steps`);
+    socket.emit("routeSaved", { success: true, route });
+  });
+
+
+  // Add route
   socket.on("addRoute", async (data) => {
     const route = new routeModel({
       name: "a route",
