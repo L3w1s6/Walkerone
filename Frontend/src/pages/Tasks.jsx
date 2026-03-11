@@ -23,7 +23,7 @@ async function addTask(taskData) {
 
 export default function Tasks() {
     const userEmail = localStorage.getItem('userEmail'); // Get logged in user's email
-    const [tasks, setTasks] = useState([]); // Contains list of tasks, load from db later
+    const [tasks, setTasks] = useState([]); // Contains list of tasks
     const [showCreate, setShowCreate] = useState(false); // State for showing/hiding the creation menu
     const [taskName, setTaskName] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
@@ -74,10 +74,23 @@ export default function Tasks() {
         }
     };
 
-    const toggleTaskCompletion = (taskId) => {
+    const toggleTaskCompletion = async (taskId) => {
+        const task = tasks.find((t) => (t._id || t.id) === taskId);
+        if (!task) return;
+        const newCompleted = !task.completed;
+        try {
+            await fetch(`/updateTask/${taskId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completed: newCompleted })
+            });
+        } catch (err) {
+            console.error('Failed to update task:', err);
+            return;
+        }
         setTasks((currentTasks) =>
-            currentTasks.map((task) =>
-                (task._id || task.id) === taskId ? { ...task, completed: !task.completed } : task // Update the completion status for the task the button was pressed on
+            currentTasks.map((t) =>
+                (t._id || t.id) === taskId ? { ...t, completed: newCompleted } : t
             )
         );
     };
@@ -105,7 +118,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {ongoingTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
                             ))}
                         </div>
                     </div>}
@@ -117,7 +130,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {completedTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
                             ))}
                         </div>
                     </div>}

@@ -76,6 +76,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/updateTask': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/deleteRoute': {
         target: 'http://localhost:8000',
         changeOrigin: true

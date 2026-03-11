@@ -648,6 +648,23 @@ app.post("/addTask", async (req, res) => {
 
 // will need a seperate one for doctors
 
+// Toggle task completion
+app.patch("/updateTask/:id", async (req, res) => {
+  try {
+    const { completed } = req.body;
+    const task = await taskModel.findByIdAndUpdate(
+      req.params.id,
+      { completed },
+      { new: true }
+    );
+    if (!task) return res.status(404).json({ message: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    console.log(err);
+  }
+  
+});
+
 // Get all tasks for the logged in user
 app.get("/getTasks", async (req, res) => {
   try {
