@@ -19,6 +19,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
   const userEmail = localStorage.getItem('userEmail');
   const username = localStorage.getItem('username');
+  const routeOwner = username || userEmail;
 
   /*
   * How It Works:
@@ -33,7 +34,10 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
 
   useEffect(() => {
-    const newSocket = io('http://localhost:8000');
+    const newSocket = io('/', {
+      path: '/socket.io',
+      transports: ['websocket']
+    });
     setSocket(newSocket);
 
     // Listen for live stats updates (every 3-5 seconds while walking)
@@ -50,7 +54,16 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       }
     });
 
-    return () => newSocket.disconnect();
+    newSocket.on('connect_error', (err) => {
+      console.error('Socket connection failed:', err.message);
+    });
+
+    return () => {
+      newSocket.off('liveStats');
+      newSocket.off('routeSaved');
+      newSocket.off('connect_error');
+      newSocket.disconnect();
+    };
   }, []);
 
   // -------------------- Backend Functions --------------------
@@ -362,9 +375,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         setCoordinates(prev => [...prev, newCoordinate]);
 
         // Send to backend every 3-5 seconds
-        if (socket) {
+        if (socket && routeOwner) {
           socket.emit('liveCoordinate', {
-            username: username,
+            username: routeOwner,
             coordinate: newCoordinate
           });
         }
@@ -396,8 +409,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     setIsRecording(false); // Update parent state
 
     // Tell backend to calculate step count and save
-    if (socket) {
-      socket.emit('saveRoute', { username: username });
+    if (socket && routeOwner) {
+      socket.emit('saveRoute', { username: routeOwner });
     }
 
     setCoordinates(currentCoords => {
@@ -466,9 +479,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     setCoordinates(prev => [...prev, newCoordinate]);
 
     // Send to backend if recording
-    if (isRecording && socket) {
+    if (isRecording && socket && routeOwner) {
       socket.emit('liveCoordinate', {
-        username: username,
+        username: routeOwner,
         coordinate: newCoordinate
       });
     }
