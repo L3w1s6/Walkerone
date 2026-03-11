@@ -582,10 +582,11 @@ app.get("/getRoutes", async (req, res) => {
 });
 
 app.get("/getFriendRoutes", async (req, res) => {
-
   try {
-    const { usernames } = "req.body"
-    const friendRoutes = await routeModel.find({ username: { $in: usernames } });
+    const { username } = "req.body"
+    // or change it to email if its different
+    const user = await userModel.find({ username: username });
+    const friendRoutes = await routeModel.find({ username: { $in: user.friends } });
     res.json(friendRoutes);
   } catch (err) {
     console.log(err)
