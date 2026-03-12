@@ -28,6 +28,7 @@ export default function Tasks() {
     const [taskName, setTaskName] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
     const [taskDate, setTaskDate] = useState('');
+    const [isEditing, setIsEditing] = useState(false); // State for managing whether or not the user is editing tasks
 
     // Get all of the user's tasks
     const fetchTasks = async () => {
@@ -74,6 +75,24 @@ export default function Tasks() {
         }
     };
 
+    const updateTask = async (taskId, updates) => {
+        try {
+            await fetch(`/updateTask/${taskId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+        } catch (err) {
+            console.error('Failed to update task:', err);
+            return;
+        }
+        setTasks((currentTasks) =>
+            currentTasks.map((t) =>
+                (t._id || t.id) === taskId ? { ...t, ...updates } : t
+            )
+        );
+    };
+
     const toggleTaskCompletion = async (taskId) => {
         const task = tasks.find((t) => (t._id || t.id) === taskId);
         if (!task) return;
@@ -111,6 +130,10 @@ export default function Tasks() {
             </div>
 
             <div className={`flex-1 overflow-y-auto ${showCreate ? 'blur-xs' : ''}`}>
+                {isEditing
+                    ? <button onClick={() => setIsEditing(false)}> Done </button>
+                    : <button onClick={() => setIsEditing(true)}> Edit </button>
+                }
                 {ongoingTasks.length > 0 &&
                     <div>
                         <div className="border-l-4 border-green-600 bg-green-50 px-5 py-3 mt-4">
@@ -118,7 +141,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {ongoingTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} />
                             ))}
                         </div>
                     </div>}
@@ -130,7 +153,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {completedTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} onToggle={() => toggleTaskCompletion(task._id || task.id)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} />
                             ))}
                         </div>
                     </div>}

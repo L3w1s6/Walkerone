@@ -649,13 +649,18 @@ app.post("/addTask", async (req, res) => {
 
 // will need a seperate one for doctors
 
-// Toggle task completion
+// Update a task when edited or completion is toggled
 app.patch("/updateTask/:id", async (req, res) => {
   try {
-    const { completed } = req.body;
-    const task = await taskModel.findByIdAndUpdate(
+    const { completed, name, description, completionDate } = req.body;
+    const updates = {}; // Array of updates to be changed
+    if (completed !== undefined) updates.completed = completed;
+    if (name !== undefined) updates.name = name;
+    if (description !== undefined) updates.description = description;
+    if (completionDate !== undefined) updates.completionDate = completionDate;
+    const task = await taskModel.findByIdAndUpdate( // Find task by id and update it with the updates array
       req.params.id,
-      { completed },
+      updates,
       { new: true }
     );
     if (!task) return res.status(404).json({ message: "Task not found" });
