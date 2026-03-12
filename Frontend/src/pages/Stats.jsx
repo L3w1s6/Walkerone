@@ -11,7 +11,9 @@ import {
     ArcElement,
     RadialLinearScale,
 } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels'
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+import {HiRewind, HiFastForward} from "react-icons/hi";
 
 //required to explicitly register used components
 ChartJS.register(
@@ -34,6 +36,14 @@ function getGrad(context) {
     grad.addColorStop(1, "#ff0000")//elevated
     return grad
 }
+
+const DateBtn = ({icon: Icon}) => {
+    return (
+        <div className="w-20 rounded-lg flex flex-col items-center text-gray-600 cursor-pointer transition hover:scale-115">
+            <Icon className="w-12 h-12 text-green-300"/>
+        </div>
+    )
+};
 
 export default function Stats() {
     //Heartrate chart
@@ -179,7 +189,7 @@ export default function Stats() {
 
     return (
         <div className="flex flex-col w-full h-full justify-around gap-4 p-2">
-            <div className="flex flex-col w-full gap-2 text-center mt-2">
+            <div className="flex flex-col w-full gap-2 text-center mt-2"> {/* Title */}
                 <h1 className="text-4xl font-black text-green-700">Stats</h1>
                 <p className="text-gray-600 font-medium">View your walking stats!</p>
             </div>
@@ -188,16 +198,18 @@ export default function Stats() {
                 <Line data={heartDatasets} options={heartOps} />
             </div>
 
-            <div className="flex w-full justify-center"> {/* Steps pie? */}
+            <div className="flex w-full justify-center"> {/* Steps pie */}
                 <Doughnut data={stepDatasets} options={stepOps} plugins={[ChartDataLabels]} />
             </div>
 
-            <div className="flex w-full justify-center"> {/* Calories pie? */}
+            <div className="flex w-full justify-center"> {/* Calories pie */}
                 <Doughnut data={calDatasets} options={calOps} plugins={[ChartDataLabels]} />
             </div>
 
-            <div className="flex w-full mb-2">
-                history button
+            <div className="flex justify-between items-center w-full pb-2"> {/* Date Incrementer */}
+                <DateBtn icon={HiRewind} />
+                <p className="text-2xl font-bold text-gray-600">12/3/26</p>
+                <DateBtn icon={HiFastForward} />
             </div>
         </div>
     )
