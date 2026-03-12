@@ -92,7 +92,7 @@ export default function Stats() {
                 text: "Heartrate",
                 font: {
                     weight: "bold",
-                    size: 15
+                    size: 18
                 }
             }
         },
@@ -124,14 +124,14 @@ export default function Stats() {
                     text: "Steps",
                     font: {
                         weight: "bold",
-                        size: 15
+                        size: 18
                     }
                 }
             },
             datalabels: {
                 color: "#000000",
                 font: {
-                    size: 12
+                    size: 15
                 },
                 formatter: (v, ctx) => {
                     return v
@@ -161,14 +161,14 @@ export default function Stats() {
                     text: "Calories",
                     font: {
                         weight: "bold",
-                        size: 15
+                        size: 18
                     }
                 }
             },
             datalabels: {
                 color: "#000000",
                 font: {
-                    size: 12
+                    size: 15
                 },
                 formatter: (v, ctx) => {
                     return v + " kcal"
@@ -178,33 +178,25 @@ export default function Stats() {
     }
 
     return (
-
-        <div className="flex flex-col w-full h-full">
-
-            <div className="text-center mb-8 pt-6">
-                <h1 className="text-4xl font-black text-green-700 mb-2">
-                    Stats
-                </h1>
-                <p className="text-gray-600 font-medium">
-                    View your walking stats!
-                </p>
+        <div className="flex flex-col w-full h-full justify-around gap-4 p-2">
+            <div className="flex flex-col w-full gap-2 text-center mt-2">
+                <h1 className="text-4xl font-black text-green-700">Stats</h1>
+                <p className="text-gray-600 font-medium">View your walking stats!</p>
             </div>
 
-            <div className="flex w-full"> {/* Heartrate line graph */}
+            <div className="flex w-full justify-center"> {/* Heartrate line graph */}
                 <Line data={heartDatasets} options={heartOps} />
             </div>
 
-            <div className="flex flex-row justify-between w-full">
-                <div className="flex flex-col w-full"> {/* Steps pie? */}
-                    <Doughnut data={stepDatasets} options={stepOps} plugins={[ChartDataLabels]} />
-                </div>
-
-                <div className="flex flex-col w-full"> {/* Calories pie? */}
-                    <Doughnut data={calDatasets} options={calOps} plugins={[ChartDataLabels]} />
-                </div>
+            <div className="flex w-full justify-center"> {/* Steps pie? */}
+                <Doughnut data={stepDatasets} options={stepOps} plugins={[ChartDataLabels]} />
             </div>
 
-            <div className="flex w-full">
+            <div className="flex w-full justify-center"> {/* Calories pie? */}
+                <Doughnut data={calDatasets} options={calOps} plugins={[ChartDataLabels]} />
+            </div>
+
+            <div className="flex w-full mb-2">
                 history button
             </div>
         </div>
