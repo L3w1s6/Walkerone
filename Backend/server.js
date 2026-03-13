@@ -661,15 +661,16 @@ app.patch("/updateTask/:id", async (req, res) => {
 
 });
 
-app.get("/getTodayBiomarkers", async (req, res) => {
+app.get("/getRoutesPeriod", async (req, res) => {
   try {
-    const { email } = req.query
+    const {email, offset} = req.query
+    // offset = 1 for today, 7 for a week if you want
     const user = await userModel.find({ email: email });
     const today = new Date();
 
     // cant use today directly as it would include exact timestamp
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
 
     const data = await userModel.find(
       {
