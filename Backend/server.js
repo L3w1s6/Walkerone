@@ -17,7 +17,7 @@ const PORT = process.env.PORT;
 // bcrypt password hashing
 const saltRounds = 10;
 const activeRoutes = {};
-
+mongoose.set('sanitizeFilter', true);
 mongoose.connect(URI).then(() => {
   console.log("mongoDB databases connected");
   httpServer.listen(PORT, () => {
@@ -352,16 +352,6 @@ app.post('/doctor-register', async (req, res) => {
 });
 
 
-// TODO
-
-//Still need to add doctor and their users, and removing friends
-
-//assign task function 
-// check if the username to add a task to is a patient of that doctor
-// add the task to that patient if it
-// decline if nots
-
-
 /* - FRIEND SYSTEM - */
 
 // Send a friend request
@@ -647,7 +637,7 @@ app.post("/addTask", async (req, res) => {
   res.json(task);
 });
 
-// will need a seperate one for doctors
+
 
 // Update a task when edited or completion is toggled
 app.patch("/updateTask/:id", async (req, res) => {
@@ -668,7 +658,37 @@ app.patch("/updateTask/:id", async (req, res) => {
   } catch (err) {
     console.log(err);
   }
-  
+
+});
+
+app.get("/getTodayBiomarkers", async (req, res) => {
+  try {
+    const { email } = req.query
+    const user = await userModel.find({ email: email });
+    const today = new Date();
+
+    // cant use today directly as it would include exact timestamp
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+    const data = await userModel.find(
+      {
+        username: user.username,
+        startTime: {
+          // data within the boundary of today
+          $gte: start,
+          $lt: end
+        }
+      });
+
+    console.log(data)
+    res.json(data)
+
+
+
+  } catch (err) {
+    console.log(err)
+  }
 });
 
 // Get all tasks for the logged in user
@@ -724,14 +744,14 @@ io.on("connection", (socket) => {
   // Receive live coordinates and send back real-time stats
   socket.on("liveCoordinate", (data) => {
     const { username, coordinate } = data;
-    
+
     if (!activeRoutes[username]) {
       activeRoutes[username] = {
         coordinates: [],
         startTime: new Date().toISOString() // Converts date to an int, just easier in mongodb searching and sorting
       };
     }
-    
+
     activeRoutes[username].coordinates.push(coordinate);
     /*
     numCoords is used to count how many coordinates there are (lat, long) then by how many coordinates there are, 
@@ -742,11 +762,11 @@ io.on("connection", (socket) => {
     const distance = (numCoords * 0.1); // in km
     const steps = Math.round(distance * 1377); // 1377 steps per km
     const calories = Math.round(distance * 60); // cals burned per km
-    
+
     console.log(`${username}: ${numCoords} coords, ${steps} steps`);
-    
+
     // Send current stats back to frontend
-    socket.emit("liveStats", { 
+    socket.emit("liveStats", {
       steps: steps,
       distance: distance,
       calories: calories,
@@ -757,19 +777,19 @@ io.on("connection", (socket) => {
   // Save route when user stops
   socket.on("saveRoute", async (data) => {
     const { username } = data;
-    
+
     if (!activeRoutes[username]) {
       return socket.emit("routeSaved", { success: false, message: "No data" });
     }
 
     const routeData = activeRoutes[username];
     const numCoords = routeData.coordinates.length;
-    
+
     //Calculated for average height (5'9)
     const distance = (numCoords * 0.1); // in km 
     const steps = Math.round(distance * 1377); // 1377 steps per km 
     const calories = Math.round(distance * 60); // cals burned per km
-    
+
     const route = new routeModel({
       name: "a route",
       distance: distance,
@@ -781,10 +801,10 @@ io.on("connection", (socket) => {
       coordinates: routeData.coordinates,
       username: username
     });
-    
+
     await route.save();
     delete activeRoutes[username];
-    
+
     console.log(`${username}: ${distance.toFixed(2)}km, ${steps} steps`);
     socket.emit("routeSaved", { success: true, route });
   });
