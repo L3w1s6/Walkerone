@@ -31,7 +31,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
     };
 
     return (
-        <div className="h-auto w-full flex flex-row justify-between rounded-lg p-1 bg-white">
+        <div className={`h-auto w-full flex flex-row justify-between rounded-lg my-0.5 p-1 ${assignedBy !== userEmail ? 'bg-gray-100/85' : 'bg-white'}`}>
             {isEditing && assignedBy === userEmail && <>
                 <div className="flex flex-col gap-1 flex-1 pr-2">
 
@@ -46,10 +46,10 @@ export default function Task({name, description, completionDate, taskCompleted, 
 
                 </div>
             </>}
-            {!isEditing && <>
+            {(!isEditing || (isEditing && assignedBy !== userEmail)) && <>
                 <div>
                     <h2 className={`text-2xl font-semibold ${taskCompleted ? 'line-through' : ''}`}>
-                        {name} {assignedBy !== userEmail && <>| <GiHealthNormal className="inline" /></>}
+                        {name} {assignedBy !== userEmail && <>| <GiHealthNormal className="inline text-red-500" /></>}
                     </h2>
                     <div className='flex flex-row gap-2 text-xs text-neutral-500'>
                         <p> {description} </p>

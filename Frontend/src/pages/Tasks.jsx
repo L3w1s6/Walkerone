@@ -130,10 +130,6 @@ export default function Tasks() {
             </div>
 
             <div className={`flex-1 overflow-y-auto ${showCreate ? 'blur-xs' : ''}`}>
-                {isEditing
-                    ? <button onClick={() => setIsEditing(false)}> Done </button>
-                    : <button onClick={() => setIsEditing(true)}> Edit </button>
-                }
                 {ongoingTasks.length > 0 &&
                     <div>
                         <div className="border-l-4 border-green-600 bg-green-50 px-5 py-3 mt-4">
@@ -158,13 +154,23 @@ export default function Tasks() {
                         </div>
                     </div>}
             </div>
+            {isEditing && (
+                        <p className='text-gray-400 text-lg text-center mb-2'>Only self-assigned goals can be edited.</p>
+            )}
+            <div className="flex justify-end mb-4 px-4 text-center">
+                <div className='flex w-full justify-between'>
+                    {isEditing
+                            ? <button onClick={() => setIsEditing(false)} className='bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2'> Done </button>
+                            : <button onClick={() => setIsEditing(true)} className='bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2'> Edit </button>
+                    }
 
-            <CreateTaskMenu showCreate={showCreate} handleSubmit={handleSubmit} taskName={taskName} setTaskName={setTaskName} taskDescription={taskDescription} setTaskDescription={setTaskDescription} taskDate={taskDate} setTaskDate={setTaskDate} setShowCreate={setShowCreate}/>
-            
-            <div className="flex justify-end mb-4 px-5 text-center">
-                <button onClick={createTask} className="bg-green-300 rounded-full px-6 py-4 text-4xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">
-                    +
-                </button>
+                    <CreateTaskMenu showCreate={showCreate} handleSubmit={handleSubmit} taskName={taskName} setTaskName={setTaskName} taskDescription={taskDescription} setTaskDescription={setTaskDescription} taskDate={taskDate} setTaskDate={setTaskDate} setShowCreate={setShowCreate}/>
+                    
+                    
+                    <button onClick={createTask} className="bg-green-300 rounded-full px-6 py-4 text-4xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">
+                        +
+                    </button>
+                </div>
             </div>
         </div>
     )

@@ -1,7 +1,7 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Profile from '../components/Profile';
 
-export default function FriendProfile() { // Used for searched for users too
+export default function OtherProfile() {
   const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
   const isDoctor = userType === 'doctor'; // Check if user is doctor
   const [searchParams] = useSearchParams();

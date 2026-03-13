@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Task from "./Task";
 import CreateTaskMenu from "./CreateTaskMenu";
+import PrevRoute from "./Route";
 
 export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
@@ -29,6 +30,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [taskName, setTaskName] = useState(''); // State for task name when assigning one
     const [taskDescription, setTaskDescription] = useState(''); // State for task description when assigning one
     const [taskDate, setTaskDate] = useState(''); // State for task completion date when assigning one
+    const [viewedUserRecentRoutes, setViewedUserRecentRoutes] = useState([]); // State for the viewed friend's recent routes
 
     /*
     * Using this instead of just the account page so that different types of profiles can be loaded with just some small changes in content,
@@ -360,6 +362,36 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         }
     };
 
+    // Get the 3 most recent routes for the viewed user, if they are your friend
+    useEffect(() => {
+        const fetchViewedUserRecentRoutes = async () => {
+            if (isOwnProfile || !username || !isAlreadyFriend || !friendshipChecked) { // Stop if viewed user isn't your friend
+                setViewedUserRecentRoutes([]);
+                return;
+            }
+
+            try {
+                const viewedRoutesResponse = await fetch(`/showRoutesByUser/${encodeURIComponent(username)}`); // Fetch the routes for the viewed user
+                if (!viewedRoutesResponse.ok) {
+                    setViewedUserRecentRoutes([]);
+                    return;
+                }
+
+                const viewedRoutesData = await viewedRoutesResponse.json();
+                const allViewedRoutes = Array.isArray(viewedRoutesData) ? viewedRoutesData : [];
+                const recentRoutes = [...allViewedRoutes]
+                    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime)) // Sort the routes from most recent to least
+                    .slice(0, 3); // Only get 3 most recent routes
+
+                setViewedUserRecentRoutes(recentRoutes);
+            } catch (error) {
+                console.error("Failed to load viewed user's recent routes", error);
+                setViewedUserRecentRoutes([]);
+            }
+        };
+        fetchViewedUserRecentRoutes();
+    }, [isOwnProfile, username, friendshipChecked, isAlreadyFriend]);
+
     // Fetch tasks for the viewed assigned user
     useEffect(() => {
         fetchAssignedUserTasks();
@@ -532,6 +564,23 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             </div>
         )}
 
+        {/* ---------- Friend's recent routes ----------  */}
+
+        {!isOwnProfile && !isDoctor && isAlreadyFriend && viewedUserRecentRoutes.length > 0 && (
+            <div className="w-full mb-8">
+                <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
+                    <p className="text-lg uppercase font-black text-green-400 mb-1">
+                        Recent Routes
+                    </p>
+                    <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
+                        {viewedUserRecentRoutes.map((route) => (
+                            <PrevRoute key={route._id || route.id} route={route} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* ---------- Add Friend button, only shown if not on own profile and not already friends ----------  */}
 
         {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
@@ -547,6 +596,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 - Remove Friend
             </button>
         )}
+
+        
 
         {/* ---------- Connect with user button, only shown if a doctor and not on own profile and not already connected ---------- */}
 

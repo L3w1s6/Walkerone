@@ -6,7 +6,7 @@ import BottomNav from './components/BottomNav';
 import MapWrapper from './components/MapWrapper';
 import UserSession from './components/UserSession';
 import Account from './pages/Account';
-import FriendProfile from './pages/FriendProfile';
+import OtherProfile from './pages/OtherProfile';
 import Login from './pages/Login';
 import Stats from './pages/Stats';
 import Tasks from './pages/Tasks';
@@ -54,7 +54,7 @@ export default function App() {
                   <Routes>
                     <Route path="/map" element={<div/>}/> {/* Empty screen, actual map added by MapWrapper */}
                     <Route path="/account" element={<Account/>}/>
-                    <Route path="/profile" element={<FriendProfile/>}/>
+                    <Route path="/profile" element={<OtherProfile/>}/>
                     <Route path="/routes2" element={<RoutesPage/>}/>
                     <Route path="/stats" element={<Stats/>}/>
                     <Route path="/tasks" element={<Tasks/>}/>
