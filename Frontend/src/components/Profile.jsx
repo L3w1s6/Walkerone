@@ -542,7 +542,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
         {/* ---------- Remove Friend button, only shown if not on own profile and already friends ---------- */}
 
-        {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
+        {!isOwnProfile && friendshipChecked && isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
             <button className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 - Remove Friend
             </button>

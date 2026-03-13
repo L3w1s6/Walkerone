@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Route({route}) {
+export default function Route({route, showRouteOwner = false}) {
     const formatDate = (dateString) => { // Takes in a date and turns it into a readable format
         const date = new Date(dateString);
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
@@ -11,6 +11,9 @@ export default function Route({route}) {
         <Link to="/route" state={{ route }}>
             <div className="h-auto w-full rounded-lg p-1 bg-white">
                 <h2 className="text-3xl font-semibold"> {route.name} </h2>
+                {showRouteOwner && route.username && (
+                    <p className="text-xs text-neutral-500">By {route.username}</p>
+                )}
                 <p className="text-sm text-neutral-600"> {formatDate(route.startTime)} | {route.distance}km </p>
             </div>
         </Link>

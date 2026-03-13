@@ -3,30 +3,67 @@ import PrevRoute from "../components/Route";
 
 export default function Routes() {
     const username = localStorage.getItem('username');
-    const [prevRoutes, setPrevRoutes] = useState([]);
+    const [ownPrevRoutes, setOwnPrevRoutes] = useState([]);
+    const [friendsPrevRoutes, setFriendsPrevRoutes] = useState([]);
     const [routeFilter, setRouteFilter] = useState("friends");
 
     useEffect(() => {
         const fetchRoutes = async () => {
             if (!username) {
-                setPrevRoutes([]);
+                setOwnPrevRoutes([]);
+                setFriendsPrevRoutes([]);
                 return;
             }
+
             try {
-                const response = await fetch(`/showRoutesByUser/${encodeURIComponent(username)}`);
-                if (!response.ok) {
-                    setPrevRoutes([]);
-                    return;
+                const [ownRoutesResponse, userDataResponse] = await Promise.all([ // Get both own and friends' routes
+                    fetch(`/showRoutesByUser/${encodeURIComponent(username)}`),
+                    fetch(`/getUserData?searchName=${encodeURIComponent(username)}`)
+                ]);
+
+                let ownRoutes = [];
+                if (ownRoutesResponse.ok) {
+                    const ownData = await ownRoutesResponse.json();
+                    ownRoutes = Array.isArray(ownData) ? ownData : []; // Set own routes to the array of routyes
                 }
-                const data = await response.json();
-                setPrevRoutes(Array.isArray(data) ? data : []);
+
+                let friendsRoutes = [];
+                if (userDataResponse.ok) {
+                    const userData = await userDataResponse.json();
+                    const friends = Array.isArray(userData?.friends) ? userData.friends : []; // Set friends to array of friends
+                    if (friends.length > 0) {
+                        const friendsRouteResponses = await Promise.all(
+                            friends.map((friendUsername) =>
+                                fetch(`/showRoutesByUser/${encodeURIComponent(friendUsername)}`) // If the user has friends, get each of their routes
+                            )
+                        );
+
+                        const friendsRoutesArrays = await Promise.all(
+                            friendsRouteResponses.map(async (response) => {
+                                if (!response.ok) return [];
+                                const data = await response.json();
+                                return Array.isArray(data) ? data : [];
+                            })
+                        );
+                        friendsRoutes = friendsRoutesArrays.flat(); // Convert arrays of friend routes into an array containing all of them
+                    }
+                }
+
+                const sortByNewest = (routes) =>
+                    [...routes].sort((a, b) => new Date(b.startTime) - new Date(a.startTime)); // Sorts routes from neest -> oldest
+
+                setOwnPrevRoutes(sortByNewest(ownRoutes));
+                setFriendsPrevRoutes(sortByNewest(friendsRoutes));
             } catch (error) {
                 console.error("Failed to get routes", error);
-                setPrevRoutes([]);
+                setOwnPrevRoutes([]);
+                setFriendsPrevRoutes([]);
             }
         };
         fetchRoutes();
     }, [username])
+
+    const displayedRoutes = routeFilter === "friends" ? friendsPrevRoutes : ownPrevRoutes; // Swap the displayed routes on button presses
 
     return (
         <div>
@@ -55,9 +92,17 @@ export default function Routes() {
             </div>
 
             <div className="flex flex-col px-5 divide-y divide-gray-200">
-                {prevRoutes.map((route) => (
-                    <PrevRoute key={route._id || route.id} route={route} />
-                ))}
+                {displayedRoutes.map((route) => (
+                    <PrevRoute key={route._id || route.id} route={route} showRouteOwner={routeFilter === "friends"}/>
+                    ))}
+
+                {displayedRoutes.length === 0 && (
+                    <p className="py-4 text-center text-gray-500">
+                        {routeFilter === "friends"
+                            ? "No previous routes found from your friends yet."
+                            : "No previous routes found yet."}
+                    </p>
+                )}
             </div>
         </div>
     )

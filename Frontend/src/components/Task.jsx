@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { GiHealthNormal } from "react-icons/gi";
 
 export default function Task({name, description, completionDate, taskCompleted, assignedBy, isEditing, onToggle, onSave}) {
     const userEmail = localStorage.getItem('userEmail');
-
     const [editName, setEditName] = useState(name);
     const [editDescription, setEditDescription] = useState(description);
     const [editDate, setEditDate] = useState(completionDate || '');
@@ -32,7 +32,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
 
     return (
         <div className="h-auto w-full flex flex-row justify-between rounded-lg p-1 bg-white">
-            {isEditing && <>
+            {isEditing && assignedBy === userEmail && <>
                 <div className="flex flex-col gap-1 flex-1 pr-2">
 
                     <div className="flex flex-row items-center gap-2">
@@ -49,7 +49,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
             {!isEditing && <>
                 <div>
                     <h2 className={`text-2xl font-semibold ${taskCompleted ? 'line-through' : ''}`}>
-                        {name} {assignedBy !== userEmail && <>| 🏥</>}
+                        {name} {assignedBy !== userEmail && <>| <GiHealthNormal className="inline" /></>}
                     </h2>
                     <div className='flex flex-row gap-2 text-xs text-neutral-500'>
                         <p> {description} </p>
