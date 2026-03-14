@@ -37,6 +37,7 @@ function getGrad(context) {
     return grad
 }
 
+//custom element for date change buttons
 const DateBtn = ({icon: Icon, click}) => {
     return (
         <button className="w-20 rounded-lg flex flex-col items-center text-gray-600 cursor-pointer transition hover:scale-115" onClick={click}>
@@ -60,28 +61,57 @@ const today = new Date();
 weekRange.start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (today.getDay() - 1) - 1)
 weekRange.end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (7 - (today.getDay() - 1)) - 1)
 
+//turn string into hash
+function genHashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash |= 0;//convert to 32-bit int
+    }
+    return hash;
+}
+
+//Mulberry32 PRNG algorithm: takes seed & returns function that generates float between 0 & 1
+function mulberry32(seed) {
+    return function() {
+        var t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+//generate heartrate data using pseudo-random algorithm
+function genHR(str1, str2, noPoints) {
+    const seed = genHashString(str1 + str2);
+    const rand = mulberry32(seed);//instead of using Math.random() because not pseudo-random
+
+    const data = []
+    const maxBPM = 180;
+    const minBPM = 60;
+    var curBPM = 60;
+
+    const volt = 50;//how volatile data is
+
+    for (let i = 0; i < noPoints; i++) {
+        const change = Math.floor(rand() * (volt * 2 - 1)) - volt;
+        curBPM = Math.max(minBPM, Math.min(maxBPM, curBPM + change));
+        data.push({x: i, y: curBPM});
+    }
+    return data;
+}
+
 export default function Stats() {
     const email = localStorage.getItem("userEmail");
 
     const [weekStr, setWeekStr] = useState(dateRangeStr(weekRange));//display date range
-    const [heartData, setHeartData] = useState([
-        {x: 1, y: 140},
-        {x: 2, y: 120},
-        {x: 3, y: 80},
-        {x: 4, y: 160},
-        {x: 5, y: 180},
-        {x: 6, y: 125},
-        {x: 7, y: 140},
-        {x: 8, y: 70},
-        {x: 9, y: 110},
-        {x: 10, y: 100}
-    ]);//heartrate data (points)
+    const [heartLabels, setHeartLabels] = useState([0,1]);//heartrate x axis labels
+    const [heartData, setHeartData] = useState([{x: 0, y: 60},{x: 1, y: 180}]);//heartrate data (points)
     const [stepData, setStepData] = useState([0, 1]);//steps data (taken, remaining)
     const [calData, setCalData] = useState([0, 1]);//calories data (burned, remaining)
 
     //Heartrate chart
-    //manual data & labels for now
-    const heartLabels = [1,2,3,4,5,6,7,8,9,10]
     const heartDatasets = {
         labels: heartLabels,
         datasets: [
@@ -95,7 +125,7 @@ export default function Stats() {
                     }
                     return getGrad(context)
                 },
-                tension: 0.4
+                tension: 0.3
             }
         ],
     }
@@ -104,7 +134,7 @@ export default function Stats() {
             x: {
                 title: {
                     display: true,
-                    text: "Time (Hours)"
+                    text: "Time"
                 }
             },
             y: {
@@ -217,6 +247,7 @@ export default function Stats() {
         weekRange.end.setDate(weekRange.end.getDate() + diff);
         setWeekStr(dateRangeStr(weekRange));
         getPeriodData();
+        setHeartData(genHR(email, weekRange.start.toISOString(), 24));//roughly 24 "hours"
     }
 
     //Get routes within date range & convert to charts
@@ -246,8 +277,17 @@ export default function Stats() {
 
     //init
     useEffect(() => {
-        getPeriodData()
+        dateShift(0);
     }, []);
+
+    //update heartrate labels when heartrate data changed
+    useEffect(() => {
+        var labels = [];
+        heartData.forEach((value) => {
+            labels.push(value.x);
+        });
+        setHeartLabels(labels);
+    }, [heartData])
 
     return (
         <div className="flex flex-col w-full h-full justify-around gap-4 p-2">
