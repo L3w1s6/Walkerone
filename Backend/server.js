@@ -663,30 +663,38 @@ app.patch("/updateTask/:id", async (req, res) => {
 
 app.get("/getRoutesPeriod", async (req, res) => {
   try {
-    const {email, offset} = req.query
+    const {email, start, end} = req.query
+    
     // offset = 1 for today, 7 for a week if you want
-    const user = await userModel.find({ email: email });
-    const today = new Date();
+    const user = await userModel.findOne({email: email});
+    if (!user) {return res.status(404).json({message: "User not found"});}
 
-    // cant use today directly as it would include exact timestamp
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+    //get routes data
+    const routesData = await routeModel.find({
+      username: user.username,
+      startTime: mongoose.trusted({//date range (trusted so doesn't error by trying to change format stuff to string)
+        $gte: start,
+        $lte: end
+      })
+    }).select("-_id stepCount caloriesBurned");//excluding _id, only specific fields
+    console.log(routesData)
 
-    const data = await userModel.find(
-      {
-        username: user.username,
-        startTime: {
-          // data within the boundary of today
-          $gte: start,
-          $lt: end
-        }
-      });
+    //calc totals
+    var totalSteps = 0, totalCalories = 0;
+    routesData.forEach((v) => {
+      totalSteps += v.stepCount;
+      totalCalories += v.caloriesBurned;
+    })
 
+    //arrange data to send
+    const data = {
+      steps: [totalSteps, 1000],//temp remaining 1000
+      calories: [totalCalories, 200]//temp remaining 200
+    }
     console.log(data)
+
+    //response
     res.json(data)
-
-
-
   } catch (err) {
     console.log(err)
   }

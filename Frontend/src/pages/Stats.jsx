@@ -218,15 +218,23 @@ export default function Stats() {
     //Get routes within date range & convert to charts
     const getPeriodData = async() => {
         try {
-            const response = await fetch(`/getRoutesPeriod?email=${email}&offset=${7}`);
+            //fetch data
+            const response = await fetch(`/getRoutesPeriod?email=${email}&start=${weekRange.start.toISOString()}&end=${weekRange.end.toISOString()}`);
             if (!response.ok) {
                 console.log("not found");
                 return;
             }
-            console.log(response);
 
-            const data = await response.json();//always empty for some reason
+            //check data exists
+            const data = await response.json();
+            if (!data) {
+                console.error("Period fetch returned nothing")
+            }
             console.log("Data: ", data);
+
+            //update charts
+            setStepData(data.steps)
+            setCalData(data.calories)
         } catch (e) {
             console.error("Period fetch error: ", e);
         }
