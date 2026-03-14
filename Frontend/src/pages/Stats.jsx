@@ -74,8 +74,8 @@ export default function Stats() {
         {x: 7, y: 60},
         {x: 8, y: 70},
     ]);//heartrate data (points)
-    const [stepData, setStepData] = useState([7500, 2500]);//steps data (taken, remaining)
-    const [calData, setCalData] = useState([1500, 1500]);//calories data (burned, remaining)
+    const [stepData, setStepData] = useState([0, 1]);//steps data (taken, remaining)
+    const [calData, setCalData] = useState([0, 1]);//calories data (burned, remaining)
 
     //Heartrate chart
     //manual data & labels for now
@@ -212,7 +212,6 @@ export default function Stats() {
         weekRange.end.setDate(weekRange.end.getDate() + diff);
         setWeekStr(dateRangeStr(weekRange));
         getPeriodData();
-        console.log(weekRange);
     }
 
     //Get routes within date range & convert to charts
@@ -239,6 +238,11 @@ export default function Stats() {
             console.error("Period fetch error: ", e);
         }
     }
+
+    //init
+    useEffect(() => {
+        getPeriodData()
+    }, []);
 
     return (
         <div className="flex flex-col w-full h-full justify-around gap-4 p-2">

@@ -664,7 +664,7 @@ app.patch("/updateTask/:id", async (req, res) => {
 app.get("/getRoutesPeriod", async (req, res) => {
   try {
     const {email, start, end} = req.query
-    
+
     // offset = 1 for today, 7 for a week if you want
     const user = await userModel.findOne({email: email});
     if (!user) {return res.status(404).json({message: "User not found"});}
@@ -677,7 +677,6 @@ app.get("/getRoutesPeriod", async (req, res) => {
         $lte: end
       })
     }).select("-_id stepCount caloriesBurned");//excluding _id, only specific fields
-    console.log(routesData)
 
     //calc totals
     var totalSteps = 0, totalCalories = 0;
@@ -688,8 +687,8 @@ app.get("/getRoutesPeriod", async (req, res) => {
 
     //arrange data to send
     const data = {
-      steps: [totalSteps, 1000],//temp remaining 1000
-      calories: [totalCalories, 200]//temp remaining 200
+      steps: [totalSteps, 1234],//temp, remaining doesn't exist?
+      calories: [totalCalories, 123]//temp, remaining doesn't exist?
     }
     console.log(data)
 
