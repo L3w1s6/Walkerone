@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import {Link} from 'react-router-dom';
-import {HiChevronLeft} from "react-icons/hi";
+import {HiReply} from "react-icons/hi";
 
 export default function RouteInfo() {
     const location = useLocation();
@@ -83,10 +83,10 @@ export default function RouteInfo() {
 
     return (
         <div className="w-full h-full flex flex-col justify-between z-0">
-            <div className="flex flex-row gap-4 items-center bg-white rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
+            <div className="flex flex-row gap-4 items-center bg-white text-grey-600 rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
                 <Link to="/routes2">
-                    <div className="flex items-center rounded-full border-4 cursor-pointer">
-                        <HiChevronLeft className="w-12 h-12"/>
+                    <div className="flex items-center cursor-pointer">
+                        <HiReply className="w-12 h-12"/>
                     </div>
                 </Link>
                 <h1 className="grow text-3xl font-bold">{route.name}</h1>
