@@ -687,8 +687,8 @@ app.get("/getRoutesPeriod", async (req, res) => {
 
     //arrange data to send
     const data = {
-      steps: [totalSteps, 1234],//temp, remaining doesn't exist?
-      calories: [totalCalories, 123]//temp, remaining doesn't exist?
+      steps: [totalSteps, Math.max(10000 - totalSteps, 0)],//temp, remaining doesn't exist?
+      calories: [totalCalories, Math.max(2500 - totalCalories, 0)]//temp, remaining doesn't exist?
     }
     console.log(data)
 

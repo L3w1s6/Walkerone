@@ -65,14 +65,16 @@ export default function Stats() {
 
     const [weekStr, setWeekStr] = useState(dateRangeStr(weekRange));//display date range
     const [heartData, setHeartData] = useState([
-        {x: 1, y: 100},
+        {x: 1, y: 140},
         {x: 2, y: 120},
         {x: 3, y: 80},
-        {x: 4, y: 180},
-        {x: 5, y: 160},
-        {x: 6, y: 120},
-        {x: 7, y: 60},
+        {x: 4, y: 160},
+        {x: 5, y: 180},
+        {x: 6, y: 125},
+        {x: 7, y: 140},
         {x: 8, y: 70},
+        {x: 9, y: 110},
+        {x: 10, y: 100}
     ]);//heartrate data (points)
     const [stepData, setStepData] = useState([0, 1]);//steps data (taken, remaining)
     const [calData, setCalData] = useState([0, 1]);//calories data (burned, remaining)
@@ -102,7 +104,7 @@ export default function Stats() {
             x: {
                 title: {
                     display: true,
-                    text: "Time"
+                    text: "Time (Hours)"
                 }
             },
             y: {
@@ -123,8 +125,9 @@ export default function Stats() {
                 text: "Heartrate",
                 font: {
                     weight: "bold",
-                    size: 18
-                }
+                    size: 18,
+                },
+                color: "#4b5563"
             }
         },
         interaction: {//hover tooltip behaviour
@@ -155,7 +158,8 @@ export default function Stats() {
                     font: {
                         weight: "bold",
                         size: 18
-                    }
+                    },
+                    color: "#4b5563"
                 }
             },
             datalabels: {
@@ -191,7 +195,8 @@ export default function Stats() {
                     font: {
                         weight: "bold",
                         size: 18
-                    }
+                    },
+                    color: "#4b5563"
                 }
             },
             datalabels: {
