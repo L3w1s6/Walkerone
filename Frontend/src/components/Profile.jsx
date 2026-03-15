@@ -17,6 +17,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [pfp, setPfp] = useState('👤'); // State for the viewed profile's avatar
     const [friendsList, setFriendsList] = useState([]); // State for logged in user's friends list
     const [friendsData, setFriendsData] = useState([]); // State for storing friends with their profile data
+    const [addingFriend, setAddingFriend] = useState(false); // State for checking whether or not the user is adding a friend
     const [isAlreadyFriend, setIsAlreadyFriend] = useState(false); // Check for if already friends with a user
     const [friendshipChecked, setFriendshipChecked] = useState(isOwnProfile); // State that manages whether or not friendship has been checked, stops stuff being shown if there was an error with checking
     const [isAssignedUser, setIsAssignedUser] = useState(false); // Check for if the user is assigned to the logged in doctor
@@ -512,9 +513,14 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {isOwnProfile && !isDoctor && (
             <div className="w-full mb-8">
                 <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
-                    <p className="text-lg uppercase font-black text-green-400 mb-1">
-                        Friends
-                    </p>
+                    <div className="relative flex flex-row items-center w-full">
+                        <p className="text-lg uppercase font-black text-green-400 mb-1 mx-auto">
+                            Friends
+                        </p>
+                        <span className="absolute right-0 text-lg font-black text-green-200 mb-1 py-2 px-4 bg-green-400 rounded-full cursor-pointer hover:bg-green-300 select-none" onClick={() => setAddingFriend(!addingFriend)}> 
+                           {addingFriend ? "x" : "+"}
+                        </span>
+                    </div>
                     <p className="text-3xl font-black text-green-700 mb-2">
                         {friendsList.length}
                     </p>
@@ -609,7 +615,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
         {/* ---------- Search for friends, only show on own profile ---------- */}
         
-        {isOwnProfile && !isDoctor && (
+        {isOwnProfile && !isDoctor && addingFriend && (
             <div className="w-full mb-8">
                 <div className="bg-gray-50 p-4 rounded-2xl w-full border border-gray-100">
                     <p className="text-xs uppercase font-black text-gray-500 mb-2 text-left">
@@ -683,10 +689,14 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {!isDoctor && isOwnProfile && assignedDoctor && (
             <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm mb-6">
                 <p className="text-lg uppercase font-black text-green-400 mb-1">
-                        Assigned Doctor
+                    Assigned Doctor
                 </p>
-                <p className="font-bold text-gray-800 border-t border-green-200/50">{assignedDoctor.username}</p>
-                <p className="text-xs text-gray-600">{assignedDoctor.email}</p>
+                <p className="font-bold text-gray-800 border-t border-green-200/50">
+                    {assignedDoctor.username}
+                </p>
+                <p className="text-xs text-gray-600">
+                    {assignedDoctor.email}
+                </p>
             </div>
         )}
 

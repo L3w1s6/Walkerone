@@ -43,7 +43,9 @@ export default function Task({name, description, completionDate, taskCompleted, 
                     <input className="text-xs text-neutral-500 border-b border-gray-200 focus:outline-none focus:border-green-500" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description"/>
 
                     <input type="datetime-local" className="text-xs text-neutral-500 focus:outline-none focus:border-green-500" value={editDate} onChange={(e) => setEditDate(e.target.value)}/>
-
+                </div>
+                <div className="h-inherit w-16 bg-red-200 flex justify-center items-center rounded-full cursor-pointer select-none">
+                    <span className="text-4xl"> ❌ </span>
                 </div>
             </>}
             {(!isEditing || (isEditing && assignedBy !== userEmail)) && <>
