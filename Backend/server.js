@@ -726,6 +726,13 @@ app.get("/showRoutesByUser/:username", async (req, res) => {
   res.json(routes);
 });
 
+// for data exporting
+app.get("/getAllData", async (req, res) => { 
+  const routes = await routeModel.find({ username: req.params.username });
+  const users = await userModel.find({ username: req.params.username });
+  res.json(routes + users);
+});
+
 // Show and display routes by time 
 app.get("/showRoutesByTime/:username", async (req, res) => {
   const { startDate, endDate } = req.query;
