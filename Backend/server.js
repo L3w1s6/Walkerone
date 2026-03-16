@@ -699,6 +699,34 @@ app.get("/getRoutesPeriod", async (req, res) => {
   }
 });
 
+// badge ideas
+// total days walked
+// total calories burnt
+// total step count
+// longest distance covered
+
+app.get("/showStatsByUser/:username", async (req, res) => {
+  const res = await routeModel.find({ username: req.params.username });
+
+  let stepTotal = 0;
+  let calorieTotal = 0;
+  let distanceTotal = 0;
+
+  res.forEach( doc => {
+    stepTotal = stepTotal + doc.stepTotal;
+    calorieTotal = calorieTotal + doc.calorieTotal;
+    distanceTotal = distanceTotal + doc.distanceTotal;
+  });
+
+  res.json({stepTotal, calorieTotal, distanceTotal});
+});
+
+
+// possibly implement longest streak
+
+
+
+
 // Get all tasks for the logged in user
 app.get("/getTasks", async (req, res) => {
   try {
