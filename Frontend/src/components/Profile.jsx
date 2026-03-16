@@ -603,13 +603,19 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             </button>
         )}
 
-        
-
         {/* ---------- Connect with user button, only shown if a doctor and not on own profile and not already connected ---------- */}
 
         {!isOwnProfile && profileEmail !== loggedInUserEmail && isDoctor && assignedChecked && !isAssignedUser && (
             <button onClick={handleSendDoctorAssignmentRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 + Connect with user
+            </button>
+        )}
+
+         {/* ---------- Remove User button, only shown if not on own profile and they're an assigned user ---------- */}
+
+        {!isOwnProfile && assignedChecked && isAssignedUser && profileEmail !== loggedInUserEmail && isDoctor && (
+            <button className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+                - Remove User
             </button>
         )}
 
@@ -698,6 +704,14 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     {assignedDoctor.email}
                 </p>
             </div>
+        )}
+
+         {/* ---------- Sign out button if on own profile ---------- */}
+
+        {isOwnProfile && (
+            <button className="w-full py-3 bg-cyan-100 text-cyan-500 hover:bg-cyan-200 font-black rounded-2xl transition-all border border-blue-100 cursor-pointer mb-4">
+                Edit Details
+            </button>
         )}
 
         {/* ---------- Sign out button if on own profile ---------- */}

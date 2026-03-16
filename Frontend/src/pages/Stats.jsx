@@ -308,10 +308,14 @@ export default function Stats() {
                 <Doughnut data={calDatasets} options={calOps} plugins={[ChartDataLabels]} />
             </div>
 
-            <div className="flex justify-between items-center w-full pb-2"> {/* Date Incrementer */}
+            <div className="flex justify-between items-center w-full mb-2"> {/* Date Incrementer */}
                 <DateBtn icon={HiRewind} click={() => dateShift(-7)}/>
                 <p className="text-2xl font-bold text-gray-600">{weekStr}</p>
                 <DateBtn icon={HiFastForward} click={() => dateShift(7)}/>
+            </div>
+            <div className='flex flex-row justify-between items-center pb-4'>
+                <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Import</span>
+                <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Export</span>
             </div>
         </div>
     )
