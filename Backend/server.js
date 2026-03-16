@@ -705,9 +705,11 @@ app.get("/getRoutesPeriod", async (req, res) => {
 // total step count
 // longest distance covered
 
-app.get("/showStatsByUser/:username", async (req, res) => {
-  const res = await routeModel.find({ username: req.params.username });
+app.get("/showStatsByUser", async (req, res) => {
 
+  try {
+  const { username } = req.query
+  const res = await routeModel.find({ username: username});
   let stepTotal = 0;
   let calorieTotal = 0;
   let distanceTotal = 0;
@@ -719,6 +721,9 @@ app.get("/showStatsByUser/:username", async (req, res) => {
   });
 
   res.json({stepTotal, calorieTotal, distanceTotal});
+} catch (err) {
+  console.log(err)
+}
 });
 
 
@@ -756,8 +761,9 @@ app.get("/showRoutesByUser/:username", async (req, res) => {
 
 // for data exporting
 app.get("/getAllData", async (req, res) => { 
-  const routes = await routeModel.find({ username: req.params.username });
-  const users = await userModel.find({ username: req.params.username });
+  const { username} = req.query;
+  const routes = await routeModel.find({ username: username });
+  const users = await userModel.find({ username: username });
   res.json(routes + users);
 });
 
