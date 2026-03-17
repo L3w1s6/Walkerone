@@ -556,6 +556,33 @@ app.post('/declineDoctors', async (req, res) => {
 });
 
 
+// REMOVE FRIEND
+app.post('/api/user/remove-friend', async (req, res) => {
+  try {
+    const { userEmail, friendUsername } = req.body;
+
+    const currentUser = await userModel.findOne({ email: userEmail });
+    const friendUser = await userModel.findOne({ username: friendUsername });
+
+    if (!currentUser || !friendUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove from both friends lists (User who removed the friend and the former friend, both of their pages)
+    currentUser.friends = currentUser.friends.filter(name => name !== friendUsername);
+    friendUser.friends = friendUser.friends.filter(name => name !== currentUser.username);
+
+    await currentUser.save();
+    await friendUser.save();
+
+    console.log(`Removed ${friendUsername} from friends`);
+    res.status(200).json({ message: "Friend removed" });
+  } catch (error) {
+    console.error("Error removing friend:", error);
+    res.status(500).json({ message: "Server error while trying to remove friend" });
+  }
+});
+
 
 // Get routes by username
 app.get("/getRoutes", async (req, res) => {

@@ -70,6 +70,30 @@ export default function Account() {
     }
   };
 
+  // Remove friend
+  const handleRemoveFriend = async (friendUsername) => {
+    if (!confirm(`Remove ${friendUsername} from your friends?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/user/remove-friend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail, friendUsername }),
+      });
+
+      if (response.ok) {
+        setFriendsList(prev => prev.filter(name => name !== friendUsername));
+        alert(`${friendUsername} has been removed from your friends.`);
+      } else {
+        alert("Failed to remove friend.");
+      }
+    } catch (err) {
+      console.error("Error removing friend:", err);
+    }
+  };
+
   // Accept doctor request
   const handleAcceptDoctorRequest = async (senderUsername) => {
     try {
@@ -143,6 +167,7 @@ export default function Account() {
         isOwnProfile={true}
         onSignOut={handleSignOut}
         onViewProfile={handleViewProfile}
+        onRemoveFriend={handleRemoveFriend}
         pendingRequests={pendingRequests}
         onAcceptRequest={handleAcceptRequest}
         onDeclineRequest={handleDeclineRequest}

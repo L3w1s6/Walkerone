@@ -8,6 +8,7 @@ export default function OtherProfile() {
   const navigate = useNavigate();
   const friendEmail = searchParams.get('email');
   const friendUsername = searchParams.get('username');
+  const userEmail = localStorage.getItem('userEmail');
 
   // Fetch friend's email and navigate to their profile page
   const handleViewProfile = (friendUsername) => {
@@ -23,6 +24,30 @@ export default function OtherProfile() {
       }
     };
     fetchAndNavigate();
+  };
+
+  // Remove friend function
+  const handleRemoveFriend = async (friendUsername) => {
+    if (!confirm(`Remove ${friendUsername} from your friends?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/user/remove-friend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail, friendUsername }),
+      });
+
+      if (response.ok) {
+        alert(`${friendUsername} has been removed from your friends.`);
+        navigate('/account');
+      } else {
+        alert("Failed to remove friend.");
+      }
+    } catch (err) {
+      console.error("Error removing friend:", err);
+    }
   };
 
   return (
@@ -44,7 +69,12 @@ export default function OtherProfile() {
       </div>
 
       {friendEmail ? (
-        <Profile userEmail={friendEmail} isOwnProfile={false} onViewProfile={handleViewProfile}/>
+        <Profile 
+          userEmail={friendEmail} 
+          isOwnProfile={false} 
+          onViewProfile={handleViewProfile}
+          onRemoveFriend={handleRemoveFriend}
+        />
       ) : (
         <div className="text-center text-gray-600">
           <p>No profile to display</p>

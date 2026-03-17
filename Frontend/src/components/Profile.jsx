@@ -3,7 +3,7 @@ import Task from "./Task";
 import CreateTaskMenu from "./CreateTaskMenu";
 import PrevRoute from "./Route";
 
-export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
+export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, onRemoveFriend, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
     const profileEmail = userEmail || localStorage.getItem("userEmail"); // If userEmail is not provided, use current user's email from localStorage
     const loggedInUserEmail = localStorage.getItem('userEmail'); // Get email of logged in user
@@ -598,7 +598,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {/* ---------- Remove Friend button, only shown if not on own profile and already friends ---------- */}
 
         {!isOwnProfile && friendshipChecked && isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
-            <button className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+            <button onClick={() => onRemoveFriend && onRemoveFriend(username)} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 - Remove Friend
             </button>
         )}
