@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Task from "./Task";
 import CreateTaskMenu from "./CreateTaskMenu";
 import PrevRoute from "./Route";
+import EditProfileDetailsMenu from "./EditProfileDetailsMenu";
 
 export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, onRemoveFriend, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
@@ -32,6 +33,9 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [taskDescription, setTaskDescription] = useState(''); // State for task description when assigning one
     const [taskDate, setTaskDate] = useState(''); // State for task completion date when assigning one
     const [viewedUserRecentRoutes, setViewedUserRecentRoutes] = useState([]); // State for the viewed friend's recent routes
+    const [showEditDetails, setShowEditDetails] = useState(false); // State for showing/hiding edit details menu
+    const [editedUsername, setEditedUsername] = useState(''); // State for username edited in details menu
+    const [editedPassword, setEditedPassword] = useState(''); // State for password edited in details menu
 
     /*
     * Using this instead of just the account page so that different types of profiles can be loaded with just some small changes in content,
@@ -312,6 +316,27 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     // Show task create menu when assign task button is pressed
     const createTask = () => {
         setShowCreate(true);
+    };
+
+    // Show edit details menu when edit details button is pressed
+    const openEditDetailsMenu = () => {
+        setEditedUsername(username);
+        setEditedPassword('');
+        setShowEditDetails(true);
+    };
+
+    // Update the profile (only frontend atm) when changing username
+    const handleSaveProfileDetails = (e) => {
+        e.preventDefault();
+
+        const newUsername = editedUsername.trim();
+        if (!newUsername) {
+            return;
+        }
+
+        setUsername(newUsername);
+        setEditedPassword('');
+        setShowEditDetails(false);
     };
 
     // Get assigned tasks for the assigned user's profile being viewed
@@ -706,13 +731,15 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             </div>
         )}
 
-         {/* ---------- Sign out button if on own profile ---------- */}
+         {/* ---------- Edit details button if on own profile ---------- */}
 
         {isOwnProfile && (
-            <button className="w-full py-3 bg-cyan-100 text-cyan-500 hover:bg-cyan-200 font-black rounded-2xl transition-all border border-blue-100 cursor-pointer mb-4">
+            <button onClick={openEditDetailsMenu} className="w-full py-3 bg-cyan-100 text-cyan-500 hover:bg-cyan-200 font-black rounded-2xl transition-all border border-blue-100 cursor-pointer mb-4">
                 Edit Details
             </button>
         )}
+
+        <EditProfileDetailsMenu showEditDetails={showEditDetails} setShowEditDetails={setShowEditDetails} profileEmail={profileEmail} currentUsername={username} editedUsername={editedUsername} setEditedUsername={setEditedUsername} editedPassword={editedPassword} setEditedPassword={setEditedPassword} handleSaveProfileDetails={handleSaveProfileDetails}/>
 
         {/* ---------- Sign out button if on own profile ---------- */}
 
