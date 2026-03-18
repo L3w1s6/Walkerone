@@ -456,7 +456,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 {isOwnProfile && isSelectingPfp && !isDoctor && (
                     <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 inline-grid w-max grid-cols-4 gap-x-3">
                         {availableAvatars.map((avatar) => (
-                            <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors cursor-pointer">
+                            <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 hover:scale-150 p-2 rounded-lg transition cursor-pointer">
                                 {avatar}
                             </button>
                         ))}
@@ -565,9 +565,9 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                         2
                     </p>
                     <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-200/50">
-                        <Badge emoji="🏁" name="test 1" unlocked={true} />
-                        <Badge emoji="🔥" name="test 2" unlocked={true} />
-                        <Badge emoji="🧭" name="test 3" unlocked={false} />
+                        <Badge emoji="🏁" name="test 1" unlocked={true} description="Test" progress={100} />
+                        <Badge emoji="🔥" name="test 2" unlocked={true} description="Test" progress={100} />
+                        <Badge emoji="🧭" name="test 3" unlocked={false} description="Test" progress={40} />
                     </div>
                 </div>
             </div>
