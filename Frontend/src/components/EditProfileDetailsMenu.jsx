@@ -27,7 +27,8 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                             <label className="block text-sm font-medium mb-2">Username</label>
                             <div className="flex gap-2">
                                 <input type="text" value={editedUsername} placeholder="Enter new username" onChange={(e) => setEditedUsername(e.target.value)} readOnly={!isChangingUsername} className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg ${!isChangingUsername ? 'bg-gray-100 text-gray-500' : ''}`}/>
-                                <button type="button" onClick={() => setIsChangingUsername((prev) => !prev)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+
+                                <button onClick={() => setIsChangingUsername((prev) => !prev)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                     {isChangingUsername ? 'Lock' : 'Change'}
                                 </button>
                             </div>
@@ -36,7 +37,7 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                         <div className="mb-6">
                             <label className="block text-sm font-medium mb-2">Password</label>
                             {!isChangingPassword && (
-                                <button type="button" onClick={() => setIsChangingPassword(true)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+                                <button onClick={() => setIsChangingPassword(true)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                     Change Password
                                 </button>
                             )}
@@ -44,7 +45,8 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                             {isChangingPassword && (
                                 <div className="flex gap-2">
                                     <input type="password" value={editedPassword} placeholder="Enter new password" onChange={(e) => setEditedPassword(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"/>
-                                    <button type="button" onClick={() => { setEditedPassword(''); setIsChangingPassword(false); }} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+
+                                    <button onClick={() => { setEditedPassword(''); setIsChangingPassword(false); }} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                         Cancel
                                     </button>
                                 </div>
@@ -52,7 +54,7 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                         </div>
 
                         <div className="flex gap-3 justify-end">
-                            <button type="button" onClick={() => setShowEditDetails(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
+                            <button onClick={() => setShowEditDetails(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
                                 Cancel
                             </button>
                             <button type="submit" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">

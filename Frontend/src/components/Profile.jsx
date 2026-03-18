@@ -3,6 +3,7 @@ import Task from "./Task";
 import CreateTaskMenu from "./CreateTaskMenu";
 import PrevRoute from "./Route";
 import EditProfileDetailsMenu from "./EditProfileDetailsMenu";
+import Badge from "./Badge";
 
 export default function Profile({ userEmail, isOwnProfile = false, onSignOut, onViewProfile, onRemoveFriend, pendingRequests, onAcceptRequest, onDeclineRequest, pendingDoctorRequests, onAcceptDoctorRequest, onDeclineDoctorRequest}) {
 
@@ -10,7 +11,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const loggedInUserEmail = localStorage.getItem('userEmail'); // Get email of logged in user
     const userType = localStorage.getItem('userType'); // Get type of logged in user (doctor or normal)
     const isDoctor = userType === 'doctor'; // Check if user is doctor
-    const availableAvatars = ['👤', '🦊', '🐻', '🦁', '🐸', '🐼', '🐯', '🐰', '🦅'];   // The list of avatars 
+    const availableAvatars = ['👤', '🐯', '🦊', '🐺', '🐼', '🐰', '🐨', '🦦', '🐸', '🦎', '🦋', '🦚', '🦭', '🐬', '🐙', '🦀'];   // The list of avatars 
     const [isEditing, setIsEditing] = useState(false); // State for managing whether or not the user is editing their bio
     const [isSelectingPfp, setIsSelectingPfp] = useState(false); // State for managing whether or not the profile avatar menu is shown
     const [bio, setBio] = useState('Loading...'); // State for the viewed profile's bio
@@ -36,6 +37,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [showEditDetails, setShowEditDetails] = useState(false); // State for showing/hiding edit details menu
     const [editedUsername, setEditedUsername] = useState(''); // State for username edited in details menu
     const [editedPassword, setEditedPassword] = useState(''); // State for password edited in details menu
+    const [friendsListStart, setFriendsListStart] = useState(0); // State for the current friends list start index
 
     /*
     * Using this instead of just the account page so that different types of profiles can be loaded with just some small changes in content,
@@ -44,8 +46,6 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     * Other user's profile: pfp, username, bio, add friend
     * Own profile (doctor): unchangable pfp, username, email, users search, sign out
     * Assigned user's profile: pfp, username, email, list of assigned tasks, option to assign task
-    * 
-    * Still need to add removing friends and being able to see/change email and password etc
     */
 
 
@@ -90,11 +90,12 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     useEffect(() => {
         const fetchFriendsData = async () => {
             if (!isOwnProfile || friendsList.length === 0) { // Return if user has no friends or isn't on their own profile
+                setFriendsData([]);
                 return;
             }
             try {
                 const friendsProfileData = await Promise.all(
-                    friendsList.slice(0, 3).map(async (friendUsername) => { // Friends list shows friends in groups of 3, so only need to load 3 at a time
+                    friendsList.slice(friendsListStart, friendsListStart + 3).map(async (friendUsername) => { // Friends list shows friends in groups of 3
                         try {
                             const response = await fetch(`/getUserData?searchName=${friendUsername}`);
                             if (response.ok) {
@@ -116,7 +117,24 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             }
         };
         fetchFriendsData();
-    }, [friendsList, isOwnProfile]);
+    }, [friendsList, isOwnProfile, friendsListStart]);
+
+    // Keep friends list index the same when the list changes
+    useEffect(() => {
+        if (friendsListStart >= friendsList.length) {
+            setFriendsListStart(0);
+        }
+    }, [friendsList.length, friendsListStart]);
+
+    // Show the next group of 3 friends
+    const showMoreFriends = () => {
+        if (friendsList.length <= 3) {
+            return;
+        }
+
+        const nextStart = friendsListStart + 3;
+        setFriendsListStart(nextStart >= friendsList.length ? 0 : nextStart);
+    };
 
     // Check if the viewed user is in the logged in user's friend list 
     useEffect(() => {
@@ -436,7 +454,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
                 {/* Menu containing user avatar options */}
                 {isOwnProfile && isSelectingPfp && !isDoctor && (
-                    <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 w-48 grid grid-cols-3 gap-2">
+                    <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 inline-grid w-max grid-cols-4 gap-x-3">
                         {availableAvatars.map((avatar) => (
                             <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors cursor-pointer">
                                 {avatar}
@@ -533,6 +551,28 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             </div>
         )}
 
+        {/* ---------- Badge collection, only shown on own profile or a friend's ---------- */}
+
+        {(isOwnProfile || (isAlreadyFriend && friendshipChecked)) && !isDoctor && (
+            <div className="w-full mb-8">
+                <div className="bg-green-100 p-4 rounded-2xl w-full border border-green-100 shadow-sm">
+                    <div className="relative flex flex-row items-center w-full">
+                        <p className="text-lg uppercase font-black text-green-400 mb-1 mx-auto">
+                            Badges
+                        </p>
+                    </div>
+                    <p className="text-3xl font-black text-green-700 mb-2">
+                        2
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-200/50">
+                        <Badge emoji="🏁" name="test 1" unlocked={true} />
+                        <Badge emoji="🔥" name="test 2" unlocked={true} />
+                        <Badge emoji="🧭" name="test 3" unlocked={false} />
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* ---------- Friends list, only shown on own profile ---------- */}
 
         {isOwnProfile && !isDoctor && (
@@ -564,9 +604,9 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                                 </button>
                             ))}
                             {friendsList.length > 3 && (
-                                <span className="text-xs text-green-500 font-bold self-center ml-1">
-                                    +{friendsList.length - 3} more
-                                </span>
+                                <button onClick={showMoreFriends} className="text-xs text-green-600 font-bold self-center ml-1 hover:text-green-700 hover:underline cursor-pointer">
+                                    More
+                                </button>
                             )}
                         </div>
                     )}
