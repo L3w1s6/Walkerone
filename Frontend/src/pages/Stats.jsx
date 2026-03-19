@@ -111,6 +111,33 @@ export default function Stats() {
     const [stepData, setStepData] = useState([0, 1]);//steps data (taken, remaining)
     const [calData, setCalData] = useState([0, 1]);//calories data (burned, remaining)
 
+    // Export current stats and heartrate data as a CSV file
+    const exportCsv = () => {
+        const esc = (v) => `"${String(v).replace(/"/g, '""')}"`; // Escape quotes to keep valid CSV cells
+        const rows = [
+            ["Week", weekStr],
+            ["Steps Done", stepData[0] ?? 0],
+            ["Steps Remaining", stepData[1] ?? 0],
+            ["Calories Burned", calData[0] ?? 0],
+            ["Calories Remaining", calData[1] ?? 0],
+            ["Heartrate Time", "BPM"],
+            ...heartData.map((p) => [p.x, p.y]), // Expand heartrate points into CSV rows
+        ];
+        const csv = rows
+            .map((r) => (r.length ? r.map(esc).join(",") : "")) // Convert each row array into one CSV line
+            .join("\n"); // Join all lines into one CSV string
+
+        const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        const url = URL.createObjectURL(blob); // Temporary download URL for the CSV file
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `weeklyStats.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url); // Empty temporary browser memory after download
+    }
+
     //Heartrate chart
     const heartDatasets = {
         labels: heartLabels,
@@ -315,7 +342,7 @@ export default function Stats() {
             </div>
             <div className='flex flex-row justify-between items-center pb-4'>
                 <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Import</span>
-                <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Export</span>
+                <button className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2" onClick={exportCsv}>Export</button>
             </div>
         </div>
     )

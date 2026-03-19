@@ -60,7 +60,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
                         }
                     </div>
                 </div>
-                <div onClick={onToggle} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full cursor-pointer select-none`}>
+                <div onClick={onToggle} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full cursor-pointer select-none transform hover:scale-110`}>
                         <span className="text-4xl"> ✔️ </span>
                     </div>
             </>}

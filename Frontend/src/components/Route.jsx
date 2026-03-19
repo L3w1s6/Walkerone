@@ -25,7 +25,7 @@ export default function Route({route, showRouteOwner = false, onDelete, currentU
                 {onDelete && route.username === currentUsername && (
                     <button 
                         onClick={handleDelete}
-                        className="py-1 bg-red-500 text-white text-sm rounded">
+                        className="p-1 bg-red-500 text-white text-sm rounded cursor-pointer">
                             Delete Route
                     </button>
                 )}
