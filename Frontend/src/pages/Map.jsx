@@ -36,9 +36,12 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   useEffect(() => {
     const newSocket = io('/', {
       path: '/socket.io',
-      transports: ['websocket']
+      autoConnect: false
     });
     setSocket(newSocket);
+    const connectTimer = setTimeout(() => {
+      newSocket.connect();
+    }, 0);
 
     // Listen for live stats updates (every 3-5 seconds while walking)
     newSocket.on('liveStats', (data) => {
@@ -59,10 +62,13 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     });
 
     return () => {
+      clearTimeout(connectTimer);
       newSocket.off('liveStats');
       newSocket.off('routeSaved');
       newSocket.off('connect_error');
-      newSocket.disconnect();
+      if (newSocket.connected) {
+        newSocket.disconnect();
+      }
     };
   }, []);
 
@@ -525,10 +531,10 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
       {/* Test Movement Buttons */}
       <div className="absolute bottom-25 left-5 grid grid-cols-3 grid-rows-2 gap-1">
-        <button onClick={() => simulateMovement('north')} className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-1 rounded shadow cursor-pointer"> ↑ </button>
-        <button onClick={() => simulateMovement('west')} className="bg-white p-2 font-semibold w-10 h-10 col-start-1 row-start-2 rounded shadow cursor-pointer"> ← </button>
-        <button onClick={() => simulateMovement('south')} className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-2 rounded shadow cursor-pointer"> ↓ </button>
-        <button onClick={() => simulateMovement('east')} className="bg-white p-2 font-semibold w-10 h-10 col-start-3 row-start-2 rounded shadow cursor-pointer"> → </button>
+        <button onClick={() => simulateMovement('north')} aria-label="Move north" className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-1 rounded shadow cursor-pointer"> ↑ </button>
+        <button onClick={() => simulateMovement('west')} aria-label="Move west" className="bg-white p-2 font-semibold w-10 h-10 col-start-1 row-start-2 rounded shadow cursor-pointer"> ← </button>
+        <button onClick={() => simulateMovement('south')} aria-label="Move south" className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-2 rounded shadow cursor-pointer"> ↓ </button>
+        <button onClick={() => simulateMovement('east')} aria-label="Move east" className="bg-white p-2 font-semibold w-10 h-10 col-start-3 row-start-2 rounded shadow cursor-pointer"> → </button>
       </div>
     </div>
   );

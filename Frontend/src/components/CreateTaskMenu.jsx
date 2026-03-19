@@ -9,21 +9,21 @@ export default function CreateTaskMenu({ showCreate, handleSubmit, taskName, set
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-2">Task Name</label>
-                            <input type="text" value={taskName} placeholder="Enter task name" onChange={(e) => setTaskName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg required" />
+                            <input type="text" value={taskName} placeholder="Enter task name" aria-label="Task name" onChange={(e) => setTaskName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg required" />
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-medium mb-2">Description</label>
-                            <textarea value={taskDescription} placeholder="Enter task description" rows="3" onChange={(e) => setTaskDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-300" />
+                            <textarea value={taskDescription} placeholder="Enter task description" aria-label="Task description" rows="3" onChange={(e) => setTaskDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-300" />
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-medium mb-2">Completion Date & Time</label>
-                            <input type="datetime-local" value={taskDate} onChange={(e) => setTaskDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                            <input type="datetime-local" value={taskDate} aria-label="Task completion date and time" onChange={(e) => setTaskDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                         </div>
                         <div className="flex gap-3 justify-end">
-                            <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
+                            <button type="button" aria-label="Cancel task creation" onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
                                 Cancel
                             </button>
-                            <button type="submit" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">
+                            <button type="submit" aria-label="Create task" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">
                                 Create Task
                             </button>
                         </div>

@@ -447,7 +447,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             {/* ---------- User's avatar, only editable when on own profile ----------  */}
 
             <div className="relative w-24 h-24 mx-auto mb-4">
-                <span onClick={() => isOwnProfile && setIsSelectingPfp(!isSelectingPfp)}
+                <span onClick={() => isOwnProfile && setIsSelectingPfp(!isSelectingPfp)} aria-label="Edit profile avatar"
                     className={`w-full h-full bg-green-100 text-green-600 rounded-full select-none flex items-center justify-center text-5xl shadow-inner border-4 border-white ${isOwnProfile && !isDoctor ? 'cursor-pointer hover:bg-green-200 transition-colors' : ''}`}>
                     {pfp}
                 </span>
@@ -456,7 +456,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 {isOwnProfile && isSelectingPfp && !isDoctor && (
                     <div className="absolute top-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-10 inline-grid w-max grid-cols-4 gap-x-3">
                         {availableAvatars.map((avatar) => (
-                            <button key={avatar} onClick={() => handleSavePfp(avatar)} className="text-2xl hover:bg-gray-100 hover:scale-150 p-2 rounded-lg transition cursor-pointer">
+                            <button key={avatar} onClick={() => handleSavePfp(avatar)} aria-label={`Select avatar ${avatar}`} className="text-2xl hover:bg-gray-100 hover:scale-150 p-2 rounded-lg transition cursor-pointer">
                                 {avatar}
                             </button>
                         ))}
@@ -477,8 +477,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             <div className="mt-4 mb-8">
                 {isOwnProfile && isEditing ? (
                     <div className="space-y-3">
-                        <textarea onChange={(e) => setBio(e.target.value)} value={bio} rows="3" className="w-full p-3 border rounded-xl bg-gray-50  outline-none text-sm"/>
-                        <button onClick={handleSaveBio} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full cursor-pointer">
+                        <textarea onChange={(e) => setBio(e.target.value)} aria-label="Profile bio" value={bio} rows="3" className="w-full p-3 border rounded-xl bg-gray-50  outline-none text-sm"/>
+                        <button onClick={handleSaveBio} aria-label="Save bio" className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full cursor-pointer">
                             Save Bio
                         </button>
                     </div>
@@ -488,7 +488,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                             {bio}
                         </p>
                         {isOwnProfile && (
-                            <button onClick={() => setIsEditing(true)} className="text-green-600 text-xs font-bold mt-2 hover:underline cursor-pointer">
+                            <button onClick={() => setIsEditing(true)} aria-label="Edit bio" className="text-green-600 text-xs font-bold mt-2 hover:underline cursor-pointer">
                                 Edit Bio
                             </button>
                         )}
@@ -511,10 +511,10 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                                 {senderName}
                             </p>
                             <div className="flex gap-2">
-                                <button onClick={() => onAcceptRequest && onAcceptRequest(senderName)} className="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors cursor-pointer">
+                                <button onClick={() => onAcceptRequest && onAcceptRequest(senderName)} aria-label={`Accept friend request from ${senderName}`} className="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors cursor-pointer">
                                     ✓ Accept
                                 </button>
-                                <button onClick={() => onDeclineRequest && onDeclineRequest(senderName)} className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors cursor-pointer">
+                                <button onClick={() => onDeclineRequest && onDeclineRequest(senderName)} aria-label={`Decline friend request from ${senderName}`} className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors cursor-pointer">
                                     ✕
                                 </button>
                             </div>
@@ -538,10 +538,10 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                                 {senderName}
                             </p>
                             <div className="flex gap-2">
-                                <button onClick={() => onAcceptDoctorRequest && onAcceptDoctorRequest(senderName)} className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors cursor-pointer">
+                                <button onClick={() => onAcceptDoctorRequest && onAcceptDoctorRequest(senderName)} aria-label={`Accept doctor request from ${senderName}`} className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors cursor-pointer">
                                     ✓ Accept
                                 </button>
-                                <button onClick={() => onDeclineDoctorRequest && onDeclineDoctorRequest(senderName)} className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors cursor-pointer">
+                                <button onClick={() => onDeclineDoctorRequest && onDeclineDoctorRequest(senderName)} aria-label={`Decline doctor request from ${senderName}`} className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors cursor-pointer">
                                     ✕
                                 </button>
                             </div>
@@ -582,7 +582,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                         <p className="text-lg uppercase font-black text-green-400 mb-1 mx-auto">
                             Friends
                         </p>
-                        <span className="absolute right-0 text-lg font-black text-green-200 mb-1 py-2 px-4 bg-green-400 rounded-full cursor-pointer hover:bg-green-300 select-none" onClick={() => setAddingFriend(!addingFriend)}> 
+                                <span className="absolute right-0 text-lg font-black text-green-200 mb-1 py-2 px-4 bg-green-400 rounded-full cursor-pointer hover:bg-green-300 select-none" aria-label={addingFriend ? 'Close friend search' : 'Open friend search'} onClick={() => setAddingFriend(!addingFriend)}> 
                            {addingFriend ? "x" : "+"}
                         </span>
                     </div>
@@ -593,7 +593,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     {friendsList.length > 0 && ( // Only show list if the user has friends
                         <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
                             {friendsData.map((friend) => (
-                                <button key={friend.username} onClick={() => onViewProfile && onViewProfile(friend.username)} className="w-full p-3 bg-cyan-100 rounded-xl flex items-center justify-between shadow-sm cursor-pointer transition hover:bg-cyan-200 hover:scale-105">
+                                <button key={friend.username} onClick={() => onViewProfile && onViewProfile(friend.username)} aria-label={`View profile for ${friend.username}`} className="w-full p-3 bg-cyan-100 rounded-xl flex items-center justify-between shadow-sm cursor-pointer transition hover:bg-cyan-200 hover:scale-105">
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">{friend.pfp}</span>
                                         <div className="text-left">
@@ -604,7 +604,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                                 </button>
                             ))}
                             {friendsList.length > 3 && (
-                                <button onClick={showMoreFriends} className="text-xs text-green-600 font-bold self-center ml-1 hover:text-green-700 hover:underline cursor-pointer">
+                                <button onClick={showMoreFriends} aria-label="Show more friends" className="text-xs text-green-600 font-bold self-center ml-1 hover:text-green-700 hover:underline cursor-pointer">
                                     More
                                 </button>
                             )}
@@ -628,7 +628,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 {/* Button for assigning a task */}
                 <CreateTaskMenu showCreate={showCreate} handleSubmit={handleTaskSubmit} taskName={taskName} setTaskName={setTaskName} taskDescription={taskDescription} setTaskDescription={setTaskDescription} taskDate={taskDate} setTaskDate={setTaskDate} setShowCreate={setShowCreate}/>
                 <div className="mb-4 mt-2 px-5 text-center">
-                    <button onClick={createTask} className="bg-white px-6 py-4 text-2xl cursor-pointer transition active:scale-95 rounded-lg hover:bg-gray-200 m-2">
+                    <button onClick={createTask} aria-label="Assign a new task" className="bg-white px-6 py-4 text-2xl cursor-pointer transition active:scale-95 rounded-lg hover:bg-gray-200 m-2">
                         Assign Task
                     </button>
                 </div>
@@ -655,7 +655,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {/* ---------- Add Friend button, only shown if not on own profile and not already friends ----------  */}
 
         {!isOwnProfile && friendshipChecked && !isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
-            <button onClick={handleSendViewedProfileRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+            <button onClick={handleSendViewedProfileRequest} aria-label="Send friend request" className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 + Add Friend
             </button>
         )}
@@ -663,7 +663,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {/* ---------- Remove Friend button, only shown if not on own profile and already friends ---------- */}
 
         {!isOwnProfile && friendshipChecked && isAlreadyFriend && profileEmail !== loggedInUserEmail && !isDoctor && (
-            <button onClick={() => onRemoveFriend && onRemoveFriend(username)} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+            <button onClick={() => onRemoveFriend && onRemoveFriend(username)} aria-label={`Remove ${username} from friends`} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 - Remove Friend
             </button>
         )}
@@ -671,7 +671,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {/* ---------- Connect with user button, only shown if a doctor and not on own profile and not already connected ---------- */}
 
         {!isOwnProfile && profileEmail !== loggedInUserEmail && isDoctor && assignedChecked && !isAssignedUser && (
-            <button onClick={handleSendDoctorAssignmentRequest} className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+            <button onClick={handleSendDoctorAssignmentRequest} aria-label="Send doctor connection request" className="w-full py-3 bg-green-50 text-green-600 hover:bg-green-100 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
                 + Connect with user
             </button>
         )}
@@ -679,7 +679,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
          {/* ---------- Remove User button, only shown if not on own profile and they're an assigned user ---------- */}
 
         {!isOwnProfile && assignedChecked && isAssignedUser && profileEmail !== loggedInUserEmail && isDoctor && (
-            <button className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer mb-8">
+            <button aria-label={`Remove ${username} as assigned user`} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer my-8">
                 - Remove User
             </button>
         )}
@@ -695,8 +695,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     
                     {/* Search bar */}
                     <div className="flex gap-2 mb-2">
-                        <input type="text" placeholder="Search username..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
-                        <button onClick={handleSearchUser} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
+                        <input type="text" placeholder="Search username..." aria-label="Search username" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
+                        <button onClick={handleSearchUser} aria-label="Search for friend" className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
                             Search
                         </button>
                     </div>
@@ -705,7 +705,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
                     {/* Display the found user */}
                     {searchResult && (
-                        <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => onViewProfile && onViewProfile(searchResult.username)}>
+                        <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:bg-gray-50 transition-colors" aria-label={`View profile for ${searchResult.username}`} onClick={() => onViewProfile && onViewProfile(searchResult.username)}>
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">{searchResult.pfp || '👤'}</span>
                                 <div className="text-left">
@@ -730,8 +730,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                     
                     {/* Search bar */}
                     <div className="flex gap-2 mb-2">
-                        <input type="email" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by email..." className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
-                        <button onClick={() => handleSearchUser()} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
+                        <input type="email" value={searchQuery} aria-label="Search user by email"  onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by email..." className="flex-1 p-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-green-400"/>
+                        <button onClick={() => handleSearchUser()} aria-label="Search for user" className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold cursor-pointer">
                             Search
                         </button>
                     </div>
@@ -740,7 +740,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
 
                     {/* Display the found user */}
                     {searchResult && (
-                        <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => onViewProfile && onViewProfile(searchResult.username)}>
+                        <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:bg-gray-50 transition-colors" aria-label={`View profile for ${searchResult.username}`} onClick={() => onViewProfile && onViewProfile(searchResult.username)}>
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">{searchResult.pfp || '👤'}</span>
                                 <div className="text-left">
@@ -774,7 +774,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
          {/* ---------- Edit details button if on own profile ---------- */}
 
         {isOwnProfile && (
-            <button onClick={openEditDetailsMenu} className="w-full py-3 bg-cyan-100 text-cyan-500 hover:bg-cyan-200 font-black rounded-2xl transition-all border border-blue-100 cursor-pointer mb-4">
+            <button onClick={openEditDetailsMenu} aria-label="Edit profile details" className="w-full py-3 bg-cyan-100 text-cyan-500 hover:bg-cyan-200 font-black rounded-2xl transition-all border border-blue-100 cursor-pointer mb-4">
                 Edit Details
             </button>
         )}
@@ -784,7 +784,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         {/* ---------- Sign out button if on own profile ---------- */}
 
         {isOwnProfile && (
-            <button onClick={() => onSignOut && onSignOut()} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-red-100 cursor-pointer">
+            <button onClick={() => onSignOut && onSignOut()} aria-label="Sign out" className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-red-100 cursor-pointer">
                 Sign Out
             </button>
         )}

@@ -84,7 +84,7 @@ export default function RouteInfo() {
     return (
         <div className="w-full h-full flex flex-col justify-between z-0">
             <div className="flex flex-row gap-4 items-center bg-white text-grey-600 rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
-                <Link to="/routes2">
+                <Link to="/routes2" aria-label="Back to routes">
                     <div className="flex items-center cursor-pointer">
                         <HiReply className="w-12 h-12"/>
                     </div>

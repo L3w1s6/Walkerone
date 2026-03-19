@@ -105,19 +105,19 @@ export default function Leaderboard() {
 
             <div className="flex justify-center gap-2 mb-6">
 
-                <button onClick={() => setTimeFilter("weekly")} className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'weekly'
+                <button onClick={() => setTimeFilter("weekly")} aria-label="Show weekly leaderboard" className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'weekly'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white text-gray-700'}`}>
                     Weekly
                 </button>
 
-                <button onClick={() => setTimeFilter("monthly")} className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'monthly'
+                <button onClick={() => setTimeFilter("monthly")} aria-label="Show monthly leaderboard" className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'monthly'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white text-gray-700'}`}>
                     Monthly
                 </button>
 
-                <button onClick={() => setTimeFilter("allTime")} className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'allTime'
+                <button onClick={() => setTimeFilter("allTime")} aria-label="Show all-time leaderboard" className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${timeFilter === 'allTime'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white text-gray-700'}`}>
                     All time

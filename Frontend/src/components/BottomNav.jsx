@@ -3,7 +3,7 @@ import {HiLocationMarker, HiMap, HiUsers, HiOutlineUserCircle} from "react-icons
 
 const Item = ({name, icon: Icon, path}) => {
     return (
-        <Link to={path}>
+        <Link to={path} aria-label={`Go to ${name}`}>
             <div className="w-20 flex flex-col items-center text-green-600 cursor-pointer transition hover:scale-115">
                 <Icon className="w-12 h-12 text-green-600"/>
                 <span className="text-xl font-medium mb-1"> {name} </span>
@@ -47,9 +47,9 @@ export default function BottomNav({ isRecording }) {
                     <Item name="Map" icon={HiMap} path="/map"/>
 
                     {/* Center componnent : Start and Stop tracking walk */}
-                    <div onClick={handleStartStop} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer hover:scale-115 ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
+                    <button type="button" onClick={handleStartStop} aria-label={isRecording ? 'Stop walk recording' : 'Start walk recording'} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl border-4 active:scale-95 transition cursor-pointer hover:scale-115 ${isRecording ? 'bg-red-500 border-red-700' : 'bg-white border-gray-600'}`}>
                         <span className="text-xl font-medium mb-1 text-gray-800 select-none"> {isRecording ? 'Stop' : 'Start'} </span>
-                    </div>
+                    </button>
 
                     {/* Right component: Routes */}
                     <Item name="Routes" icon={HiLocationMarker} path="/routes2"/>

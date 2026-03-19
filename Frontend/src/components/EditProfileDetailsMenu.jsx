@@ -20,15 +20,15 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                     <form onSubmit={handleSaveProfileDetails}>
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-2">Email</label>
-                            <input type="email" value={profileEmail || ''} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" readOnly />
+                            <input type="email" value={profileEmail || ''} aria-label="Profile email" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" readOnly />
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-2">Username</label>
                             <div className="flex gap-2">
-                                <input type="text" value={editedUsername} placeholder="Enter new username" onChange={(e) => setEditedUsername(e.target.value)} readOnly={!isChangingUsername} className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg ${!isChangingUsername ? 'bg-gray-100 text-gray-500' : ''}`}/>
+                                <input type="text" value={editedUsername} placeholder="Enter new username" aria-label="Username" onChange={(e) => setEditedUsername(e.target.value)} readOnly={!isChangingUsername} className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg ${!isChangingUsername ? 'bg-gray-100 text-gray-500' : ''}`}/>
 
-                                <button onClick={() => setIsChangingUsername((prev) => !prev)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+                                <button type="button" onClick={() => setIsChangingUsername((prev) => !prev)} aria-label={isChangingUsername ? 'Lock username field' : 'Enable username editing'} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                     {isChangingUsername ? 'Lock' : 'Change'}
                                 </button>
                             </div>
@@ -37,16 +37,16 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                         <div className="mb-6">
                             <label className="block text-sm font-medium mb-2">Password</label>
                             {!isChangingPassword && (
-                                <button onClick={() => setIsChangingPassword(true)} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+                                <button type="button" onClick={() => setIsChangingPassword(true)} aria-label="Enable password editing" className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                     Change Password
                                 </button>
                             )}
 
                             {isChangingPassword && (
                                 <div className="flex gap-2">
-                                    <input type="password" value={editedPassword} placeholder="Enter new password" onChange={(e) => setEditedPassword(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"/>
+                                    <input type="password" value={editedPassword} placeholder="Enter new password" aria-label="New password" onChange={(e) => setEditedPassword(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"/>
 
-                                    <button onClick={() => { setEditedPassword(''); setIsChangingPassword(false); }} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
+                                    <button type="button" onClick={() => { setEditedPassword(''); setIsChangingPassword(false); }} aria-label="Cancel password change" className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition cursor-pointer text-sm font-semibold">
                                         Cancel
                                     </button>
                                 </div>
@@ -54,10 +54,10 @@ export default function EditProfileDetailsMenu({ showEditDetails, setShowEditDet
                         </div>
 
                         <div className="flex gap-3 justify-end">
-                            <button onClick={() => setShowEditDetails(false)} className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
+                            <button type="button" onClick={() => setShowEditDetails(false)} aria-label="Close edit profile details" className="px-4 py-2 bg-gray-200 rounded-lg transition hover:bg-gray-300 cursor-pointer">
                                 Cancel
                             </button>
-                            <button type="submit" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">
+                            <button type="submit" aria-label="Save profile changes" className="px-4 py-2 bg-green-300 text-black rounded-lg transition hover:bg-green-400 cursor-pointer">
                                 Save Changes
                             </button>
                         </div>

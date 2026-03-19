@@ -36,7 +36,7 @@ export default function BadgeDetails({ emoji, name, description, progress, unloc
                     </div>
                 )}
 
-                <button onClick={onClose} className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer">
+                <button onClick={onClose} aria-label="Close badge details" className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer">
                     Close
                 </button>
             </div>

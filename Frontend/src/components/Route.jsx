@@ -25,6 +25,7 @@ export default function Route({route, showRouteOwner = false, onDelete, currentU
                 {onDelete && route.username === currentUsername && (
                     <button 
                         onClick={handleDelete}
+                        aria-label={`Delete route ${route.name}`}
                         className="p-1 bg-red-500 text-white text-sm rounded cursor-pointer">
                             Delete Route
                     </button>

@@ -86,7 +86,7 @@ export default function AssignedUsers() {
 
                         <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
                             {assignedUsers.map((user) => (
-                                <button key={user.email} onClick={() => handleViewProfile(user)} className="w-full p-3 bg-cyan-100 rounded-xl flex items-center justify-between shadow-sm cursor-pointer tranistion hover:bg-cyan-200 hover:scale-105">
+                                <button key={user.email} onClick={() => handleViewProfile(user)} aria-label={`View profile for ${user.username}`} className="w-full p-3 bg-cyan-100 rounded-xl flex items-center justify-between shadow-sm cursor-pointer tranistion hover:bg-cyan-200 hover:scale-105">
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">{user.pfp}</span>
                                         <div className="text-left">

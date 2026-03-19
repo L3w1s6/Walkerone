@@ -57,12 +57,12 @@ export default function OtherProfile() {
           {friendUsername ? `${friendUsername}'s profile` : 'Profile'}
         </h1>
         {!isDoctor &&
-        <button onClick={() => navigate('/account')} className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
+        <button onClick={() => navigate('/account')} aria-label="Back to account" className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
           ← Back to Account
         </button>
         }
         {isDoctor &&
-        <button onClick={() => navigate('/assignedUsers')} className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
+        <button onClick={() => navigate('/assignedUsers')} aria-label="Back to assigned users" className="text-green-600 text-sm font-bold hover:underline cursor-pointer">
           ← Back to Assigned Users
         </button>
         }

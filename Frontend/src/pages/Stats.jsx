@@ -38,9 +38,9 @@ function getGrad(context) {
 }
 
 //custom element for date change buttons
-const DateBtn = ({icon: Icon, click}) => {
+const DateBtn = ({icon: Icon, click, label}) => {
     return (
-        <button className="w-20 rounded-lg flex flex-col items-center text-gray-600 cursor-pointer transition hover:scale-115" onClick={click}>
+        <button className="w-20 rounded-lg flex flex-col items-center text-gray-600 cursor-pointer transition hover:scale-115" aria-label={label} onClick={click}>
             <Icon className="w-12 h-12 text-green-300"/>
         </button>
     )
@@ -117,9 +117,7 @@ export default function Stats() {
         const rows = [
             ["Week", weekStr],
             ["Steps Done", stepData[0] ?? 0],
-            ["Steps Remaining", stepData[1] ?? 0],
             ["Calories Burned", calData[0] ?? 0],
-            ["Calories Remaining", calData[1] ?? 0],
             ["Heartrate Time", "BPM"],
             ...heartData.map((p) => [p.x, p.y]), // Expand heartrate points into CSV rows
         ];
@@ -336,13 +334,13 @@ export default function Stats() {
             </div>
 
             <div className="flex justify-between items-center w-full mb-2"> {/* Date Incrementer */}
-                <DateBtn icon={HiRewind} click={() => dateShift(-7)}/>
+                <DateBtn icon={HiRewind} label="Previous week" click={() => dateShift(-7)}/>
                 <p className="text-2xl font-bold text-gray-600">{weekStr}</p>
-                <DateBtn icon={HiFastForward} click={() => dateShift(7)}/>
+                <DateBtn icon={HiFastForward} label="Next week" click={() => dateShift(7)}/>
             </div>
             <div className='flex flex-row justify-between items-center pb-4'>
                 <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Import</span>
-                <button className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2" onClick={exportCsv}>Export</button>
+                <button className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
             </div>
         </div>
     )

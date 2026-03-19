@@ -147,14 +147,14 @@ export default function Login() {
           <div className="flex flex-col gap-5 *:w-full *:px-5 *:py-4 *:bg-white/90 *:rounded-xl *:focus:bg-white *:focus:ring-2 *:focus:ring-green-600 *:outline-none *:transition-all *:duration-300 *:border *:border-gray-200 *:shadow-sm">
 
             {!isLogin && (
-              <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              <input type="text" placeholder="Username" aria-label="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
             )}
-            <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input type="email" placeholder="Email Address" aria-label="Email address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" aria-label="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
           </div>
 
-          <button type="submit" className="w-full py-4 mt-2 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 cursor-pointer">
+          <button type="submit" aria-label={isLogin ? 'Log in' : 'Sign up'} className="w-full py-4 mt-2 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 cursor-pointer">
             {isLogin ? 'Log In' : 'Sign Up'}
           </button>
 
@@ -163,13 +163,13 @@ export default function Login() {
         <div className="mt-8 text-center">
           <p className="text-gray-700 text-sm font-medium">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button onClick={() => setIsLogin(!isLogin)} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
+            <button onClick={() => setIsLogin(!isLogin)} aria-label={isLogin ? 'Switch to sign up' : 'Switch to log in'} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
               {isLogin ? 'Sign Up' : 'Log In'}
             </button>
           </p>
 
           <p className="text-gray-700 text-sm font-medium mt-4">
-            <button  onClick={() => setUserType(userType === 'user' ? 'doctor' : 'user')} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
+            <button  onClick={() => setUserType(userType === 'user' ? 'doctor' : 'user')} aria-label={userType === 'user' ? 'Switch to doctor mode' : 'Switch to user mode'} className="text-green-600 font-black hover:underline transition-all ml-1 cursor-pointer">
               {isLogin ? "Log in as a" : "Sign up as a "} {userType === 'user' ? 'doctor' : 'user'}
             </button>
           </p>
