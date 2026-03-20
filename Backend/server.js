@@ -555,6 +555,33 @@ app.post('/declineDoctors', async (req, res) => {
   }
 });
 
+// REMOVE ASSIGNED USER
+app.post('/removeUser', async (req, res) => {
+  try {
+    const { doctorEmail, userEmail } = req.body;
+    const doctor = await doctorModel.findOne({ email: doctorEmail });
+    const user = await userModel.findOne({ email: userEmail });
+
+    doctor.userEmails = (doctor.userEmails || []).filter((email) => email !== userEmail);
+    user.doctors = (user.doctors || []).filter((doctorUsername) => doctorUsername !== doctor.username);
+    await Promise.all([doctor.save(), user.save()]);
+
+    // Remove any tasks the doctor assigned to the user 
+    const deletedTasks = await taskModel.deleteMany({
+      email: userEmail,
+      assignedBy: doctorEmail
+    });
+
+    console.log(`Removed ${userEmail} from ${doctorEmail}'s assigned users`);
+    res.status(200).json({
+      message: "Assigned user removed",
+    });
+  } catch (error) {
+    console.error("Error removing assigned user:", error);
+    res.status(500).json({ message: "Server error while removing assigned user" });
+  }
+});
+
 
 // REMOVE FRIEND
 app.post('/api/user/remove-friend', async (req, res) => {

@@ -331,6 +331,36 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         }
     };
 
+    // Remove an assigned user from the logged in doctor's list
+    const handleRemoveAssignedUser = async () => {
+        if (!profileEmail || !isDoctor) {
+            return;
+        }
+        try {
+            const response = await fetch('/removeUser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    doctorEmail: loggedInUserEmail,
+                    userEmail: profileEmail,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.message || 'Failed to remove user.');
+                return;
+            }
+
+            setIsAssignedUser(false);
+            setAssignedUserTasks([]);
+            alert(`${username} has been removed from your assigned users.`);
+        } catch (err) {
+            console.error('Error removing assigned user:', err);
+            alert('Error removing assigned user.');
+        }
+    };
+
     // Show task create menu when assign task button is pressed
     const createTask = () => {
         setShowCreate(true);
@@ -679,7 +709,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
          {/* ---------- Remove User button, only shown if not on own profile and they're an assigned user ---------- */}
 
         {!isOwnProfile && assignedChecked && isAssignedUser && profileEmail !== loggedInUserEmail && isDoctor && (
-            <button aria-label={`Remove ${username} as assigned user`} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer my-8">
+            <button onClick={handleRemoveAssignedUser} aria-label={`Remove ${username} as assigned user`} className="w-full py-3 bg-red-100 text-red-500 hover:bg-red-200 font-black rounded-2xl transition-all border border-green-100 cursor-pointer my-8">
                 - Remove User
             </button>
         )}
