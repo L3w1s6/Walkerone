@@ -57,7 +57,8 @@ const routeSchema = new mongoose.Schema({
       timestamp: Date
     }
   ],
-  username: { type: String, required: true } // link a route to a user
+  username: { type: String, required: true }, // link a route to a user
+  color: String // may possibly have disastrous consequences implementing it this late
 })
 const routeModel = mongoose.model('routes', routeSchema);
 
@@ -662,6 +663,7 @@ app.post("/addRoute", async (req, res) => {
     endTime: endTime,
     coordinates: coordinates,
     username: user[0]["username"] //PLACEHOLDER
+    color: "grey"
   });
   await route.save();
   res.json(route);
@@ -753,11 +755,7 @@ app.get("/getRoutesPeriod", async (req, res) => {
   }
 });
 
-// badge ideas
-// total days walked
-// total calories burnt
-// total step count
-// longest distance covered
+
 
 app.get("/showStatsByUser", async (req, res) => {
 
@@ -820,6 +818,10 @@ app.get("/getAllData", async (req, res) => {
   const users = await userModel.find({ username: username });
   res.json(routes + users);
 });
+
+
+
+
 
 // Show and display routes by time 
 app.get("/showRoutesByTime/:username", async (req, res) => {
@@ -894,7 +896,7 @@ io.on("connection", (socket) => {
     const calories = Math.round(distance * 60); // cals burned per km
 
     const route = new routeModel({
-      name: "a route",
+      name: "new route",
       distance: distance,
       caloriesBurned: calories,
       elevationGain: 0,
@@ -902,7 +904,8 @@ io.on("connection", (socket) => {
       startTime: routeData.startTime,
       endTime: new Date().toISOString(),
       coordinates: routeData.coordinates,
-      username: username
+      username: username,
+      color: "grey"
     });
 
     await route.save();
@@ -916,7 +919,7 @@ io.on("connection", (socket) => {
   // Add route
   socket.on("addRoute", async (data) => {
     const route = new routeModel({
-      name: "a route",
+      name: "new route",
       distance: 0, //PLACEHOLDER
       caloriesBurned: 0, //PLACEHOLDER
       elevationGain: 0, //PLACEHOLDER
@@ -924,7 +927,8 @@ io.on("connection", (socket) => {
       startTime: data.startTime,
       endTime: data.endTime,
       coordinates: data.coordinates,
-      username: data.username
+      username: data.username,
+      color: "grey"
     });
     await route.save();
     socket.emit("routeAdded", { success: true, route });
