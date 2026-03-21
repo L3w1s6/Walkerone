@@ -38,6 +38,12 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [editedUsername, setEditedUsername] = useState(''); // State for username edited in details menu
     const [editedPassword, setEditedPassword] = useState(''); // State for password edited in details menu
     const [friendsListStart, setFriendsListStart] = useState(0); // State for the current friends list start index
+    const [badgeTotals, setBadgeTotals] = useState({ steps: 0, distance: 0, routes: 0 }); // Running totals used for tiered badges
+    const badgeTierTargets = {
+        steps: [10000, 50000, 100000],
+        distance: [10, 50, 100],
+        routes: [5, 25, 50],
+    };
 
     /*
     * Using this instead of just the account page so that different types of profiles can be loaded with just some small changes in content,
@@ -48,6 +54,36 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     * Assigned user's profile: pfp, username, email, list of assigned tasks, option to assign task
     */
 
+    // Sets variables for badges, based on the user's total step/distance/routes data and the tier targets for each of those badges
+    const getBadgeTierData = (value, [bronzeTarget, silverTarget, goldTarget]) => {
+
+        let tier = "none"; // user's current tier for the badge
+        let progress = 0; // User's progress to the next tier
+        let nextTier = bronzeTarget; // The next tier for the user to unlock
+
+        if (value >= goldTarget) {
+            tier = 'gold';
+            progress = 100;
+            nextTier = null;
+        } 
+        else if (value >= silverTarget) {
+            tier = 'silver';
+            progress = ((value - silverTarget) / (goldTarget - silverTarget)) * 100; // Calculate progress to next target
+            nextTier = goldTarget;
+        }
+        else if (value >= bronzeTarget) {
+            tier = 'bronze';
+            progress = ((value - bronzeTarget) / (silverTarget - bronzeTarget)) * 100; // Calculate progress to next target
+            nextTier = silverTarget;
+        }
+        else {
+            progress = (value / bronzeTarget) * 100;
+        }
+
+        return {
+            tier, progress: Math.max(0, Math.min(100, Math.round(progress))), nextTier
+        };
+    };
 
     // Fetch data for currently viewed profile by email
     useEffect(() => {
@@ -471,6 +507,44 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         fetchAssignedUserTasks();
     }, [isAssignedUser, isOwnProfile, profileEmail, loggedInUserEmail]);
 
+    // Fetch totals for badges when badge section should be visible
+    useEffect(() => {
+        const fetchBadgeTotals = async () => {
+            if (isDoctor || !username || (!isOwnProfile && (!isAlreadyFriend || !friendshipChecked))) {
+                return; // Return if not on own or a friend's profile
+            }
+
+            try {
+                const response = await fetch(`/showRoutesByUser/${encodeURIComponent(username)}`);
+                if (!response.ok) {
+                    return;
+                }
+
+                const routesData = await response.json();
+                const routes = Array.isArray(routesData) ? routesData : [];
+                const totals = routes.reduce((total, route) => { // Get the total distance and steps from all of the user's routes
+                    const distance = Number(route.distance);
+                    const steps = Number(route.stepCount);
+                    return {
+                        routes: total.routes + 1,
+                        distance: total.distance + distance,
+                        steps: total.steps + steps,
+                    };
+                }, { steps: 0, distance: 0, routes: 0 });
+
+                setBadgeTotals({...totals, distance: Number(totals.distance.toFixed(2))});
+            
+            } catch (error) {
+                console.error('Failed to fetch badge totals', error);
+            }
+        };
+        fetchBadgeTotals();
+    }, [username, isDoctor, isOwnProfile, isAlreadyFriend, friendshipChecked]);
+
+    const stepsBadge = getBadgeTierData(badgeTotals.steps, badgeTierTargets.steps);
+    const distanceBadge = getBadgeTierData(badgeTotals.distance, badgeTierTargets.distance);
+    const routesBadge = getBadgeTierData(badgeTotals.routes, badgeTierTargets.routes);
+
     return (
         <div className="bg-white rounded-4xl shadow-xl p-8 w-full max-w-sm border border-gray-50 text-center relative mb-6">
       
@@ -591,13 +665,12 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                             Badges
                         </p>
                     </div>
-                    <p className="text-3xl font-black text-green-700 mb-2">
-                        2
-                    </p>
                     <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-200/50">
-                        <Badge emoji="🏁" name="test 1" unlocked={true} description="Test" progress={100} />
-                        <Badge emoji="🔥" name="test 2" unlocked={true} description="Test" progress={100} />
-                        <Badge emoji="🧭" name="test 3" unlocked={false} description="Test" progress={40} />
+                        <Badge emoji="👟" name="Steps" tier={stepsBadge.tier} progress={stepsBadge.progress} currentValue={`${badgeTotals.steps.toString()} steps`} nextTier={stepsBadge.nextTarget ? `${stepsBadge.nextTarget.toString()} steps` : null} description={`Bronze: ${badgeTierTargets.steps[0].toString()} steps \n Silver: ${badgeTierTargets.steps[1].toString()} steps \n Gold: ${badgeTierTargets.steps[2].toString()} steps`}/>
+
+                        <Badge emoji="🗺️" name="Distance" tier={distanceBadge.tier} progress={distanceBadge.progress} currentValue={`${badgeTotals.distance.toFixed(2)}km`} nextTier={distanceBadge.nextTarget ? `${distanceBadge.nextTarget.toString()}km` : null} description={`Bronze: ${badgeTierTargets.distance[0].toString()}km \n Silver: ${badgeTierTargets.distance[1].toString()}km \n Gold: ${badgeTierTargets.distance[2].toString()}km`}/>
+
+                        <Badge emoji="📍" name="Routes" tier={routesBadge.tier} progress={routesBadge.progress} currentValue={`${badgeTotals.routes.toString()} routes`} nextTier={routesBadge.nextTarget ? `${routesBadge.nextTarget.toString()} routes` : null} description={`Bronze: ${badgeTierTargets.routes[0].toString()} routes \n Silver: ${badgeTierTargets.routes[1].toString()} routes \n Gold ${badgeTierTargets.routes[2].toString()} routes`}/>
                     </div>
                 </div>
             </div>

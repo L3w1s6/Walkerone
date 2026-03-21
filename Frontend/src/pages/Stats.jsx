@@ -25,8 +25,9 @@ ChartJS.register(
     RadialLinearScale,
 );
 
-import {HiRewind, HiFastForward} from 'react-icons/hi';
+import {HiRewind, HiFastForward, HiArrowRight} from 'react-icons/hi';
 import {useState, useEffect} from 'react';
+import { Link } from 'react-router-dom';
 
 //function to create heartrate colour gradient
 function getGrad(context) {
@@ -338,6 +339,17 @@ export default function Stats() {
                 <p className="text-2xl font-bold text-gray-600">{weekStr}</p>
                 <DateBtn icon={HiFastForward} label="Next week" click={() => dateShift(7)}/>
             </div>
+
+            <div className="text-center">
+                <p className="text-gray-600 font-medium">
+                    Compare your stats with friends
+                    <HiArrowRight className="inline-block mx-2 h-5 w-5 text-green-700" aria-hidden="true" />
+                    <Link to="/leaderboard" className="text-green-700 font-bold hover:underline">
+                        Leaderboard
+                    </Link>
+                </p>
+            </div>
+
             <div className='flex flex-row justify-between items-center pb-4'>
                 <span className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2">Import</span>
                 <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>

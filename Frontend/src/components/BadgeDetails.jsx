@@ -1,30 +1,73 @@
-export default function BadgeDetails({ emoji, name, description, progress, unlocked, onClose }) {
+export default function BadgeDetails({ emoji, name, description, progress = 0, tier = 'none', currentValue, nextTier, onClose }) {
+
+    const getTierStyles = (tier) => { // Change styling of badge details based on unlocked tier
+        if (tier === 'gold') {
+            return {
+                label: 'bg-yellow-200 text-yellow-700 border-yellow-400',
+                icon: 'bg-yellow-200 border-yellow-400',
+            };
+        }
+
+        if (tier === 'silver') {
+            return {
+                label: 'bg-slate-300 text-slate-700 border-slate-500',
+                icon: 'bg-slate-300 border-slate-500',
+            };
+        }
+
+        if (tier === 'bronze') {
+            return {
+                label: 'bg-amber-100 text-amber-700 border-amber-700',
+                icon: 'bg-amber-700/50 border-amber-700',
+            };
+        }
+
+        return {
+            label: 'bg-gray-100 text-gray-600 border-gray-200',
+            icon: 'bg-gray-100 border-gray-300',
+        };
+    };
+    const tierLabel = tier === 'none' ? 'Locked' : `${tier.charAt(0).toUpperCase()}${tier.slice(1)}`;
+    const tierStyles = getTierStyles(tier);
+
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div  className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
  
                 <div className="flex justify-center">
-                    <span className={`flex h-20 w-20 items-center justify-center select-none rounded-full bg-gray-100 text-5xl ${!unlocked ? 'grayscale opacity-45' : ''}`}>
+                    <span className={`flex h-20 w-20 items-center justify-center select-none rounded-full border-2 text-5xl ${tierStyles.icon}`}>
                         {emoji}
                     </span>
                 </div>
 
                 <div className="text-center">
-                    <h2 className={`text-2xl font-bold ${!unlocked ? 'text-gray-400' : 'text-gray-800'}`}>
+                    <h2 className="text-2xl font-bold text-gray-800">
                         {name}
                     </h2>
-                    {!unlocked && (
-                        <p className="text-sm text-gray-400 mt-1">Locked</p>
-                    )}
+                    <p className={`inline-block mt-2 px-2.5 py-1 text-xs font-bold rounded-full border ${tierStyles.label}`}>
+                        {tierLabel} Tier
+                    </p>
                 </div>
 
                 <div>
-                    <p className={`text-center text-sm ${!unlocked ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p className="text-center text-sm text-gray-600 whitespace-pre-line">
                         {description}
                     </p>
                 </div>
 
-                {progress && (
+                {currentValue && (
+                    <p className="text-center text-sm font-semibold text-gray-700">
+                        Current: {currentValue}
+                    </p>
+                )}
+
+                {nextTier && (
+                    <p className="text-center text-xs text-gray-500">
+                        Next tier unlock at {nextTier}
+                    </p>
+                )}
+
+                {typeof progress === 'number' && (
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <p className="text-sm font-semibold text-gray-700">Progress</p>
