@@ -662,7 +662,7 @@ app.post("/addRoute", async (req, res) => {
     startTime: startTime,
     endTime: endTime,
     coordinates: coordinates,
-    username: user[0]["username"] //PLACEHOLDER
+    username: user[0]["username"], //PLACEHOLDER
     color: "grey"
   });
   await route.save();
