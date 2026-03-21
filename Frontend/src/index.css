@@ -24,8 +24,22 @@
 }
 
 /* Common CSS for tailwindCSS stuff */
-@layer components {
-    .clickHover {
-        @apply transition hover:scale-[1.15] cursor-pointer
+
+/* not specified scale */
+@utility clickHover {
+    @apply transition cursor-pointer;
+
+    &:hover {
+        scale: 1.1;
+    }
+}
+
+/* specified scale */
+@utility clickHover-* {
+    @apply transition cursor-pointer;
+
+    &:hover {
+        scale: --value(number);
+        scale: --value([*]);
     }
 }

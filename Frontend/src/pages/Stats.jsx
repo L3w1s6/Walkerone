@@ -40,7 +40,7 @@ function getGrad(context) {
 //custom element for date change buttons
 const DateBtn = ({icon: Icon, click, label}) => {
     return (
-        <button className="w-20 rounded-lg flex flex-col items-center text-gray-600 cursor-pointer transition hover:scale-115" aria-label={label} onClick={click}>
+        <button className="w-20 rounded-lg flex flex-col items-center text-gray-600 clickHover-1.25" aria-label={label} onClick={click}>
             <Icon className="w-12 h-12 text-green-300"/>
         </button>
     )
@@ -315,7 +315,7 @@ export default function Stats() {
     }, [heartData])
 
     return (
-        <div className="flex flex-col w-full h-full justify-around gap-4 p-2">
+        <div className="flex flex-col w-full h-full justify-around gap-4 p-2 overflow-x-clip">
             <div className="flex flex-col w-full gap-2 text-center mt-2"> {/* Title */}
                 <h1 className="text-4xl font-black text-green-700">Stats</h1>
                 <p className="text-gray-600 font-medium">View your walking stats!</p>
@@ -339,8 +339,8 @@ export default function Stats() {
                 <DateBtn icon={HiFastForward} label="Next week" click={() => dateShift(7)}/>
             </div>
             <div className='flex flex-row justify-between items-center pb-4'>
-                <span className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">Import</span>
-                <button className="bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
+                <span className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2">Import</span>
+                <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
             </div>
         </div>
     )

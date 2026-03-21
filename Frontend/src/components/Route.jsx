@@ -26,7 +26,7 @@ export default function Route({route, showRouteOwner = false, onDelete, currentU
                     <button 
                         onClick={handleDelete}
                         aria-label={`Delete route ${route.name}`}
-                        className="p-1 bg-red-500 text-white text-sm rounded cursor-pointer">
+                        className="p-1 bg-red-500 text-white text-sm rounded clickHover">
                             Delete Route
                     </button>
                 )}

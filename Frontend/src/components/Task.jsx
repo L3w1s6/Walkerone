@@ -44,7 +44,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
 
                     <input type="datetime-local" className="text-xs text-neutral-500 focus:outline-none focus:border-green-500" aria-label="Task due date and time" value={editDate} onChange={(e) => setEditDate(e.target.value)}/>
                 </div>
-                <div className="h-16 w-16 bg-red-200 flex justify-center items-center rounded-full cursor-pointer select-none hover:bg-red-200/75">
+                <div className="h-16 w-16 bg-red-200 flex justify-center items-center rounded-full select-none clickHover hover:bg-red-200/75">
                     <span className="text-4xl"> ❌ </span>
                 </div>
             </>}
@@ -60,7 +60,7 @@ export default function Task({name, description, completionDate, taskCompleted, 
                         }
                     </div>
                 </div>
-                <button type="button" onClick={onToggle} aria-label={taskCompleted ? 'Mark task as incomplete' : 'Mark task as complete'} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full cursor-pointer select-none transform hover:scale-110`}>
+                <button type="button" onClick={onToggle} aria-label={taskCompleted ? 'Mark task as incomplete' : 'Mark task as complete'} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full select-none clickHover`}>
                         <span className="text-4xl"> ✔️ </span>
                     </button>
             </>}

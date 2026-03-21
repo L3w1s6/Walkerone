@@ -101,13 +101,13 @@ export default function Routes() {
             </div>
 
             <div className="flex justify-center gap-2 mb-6">
-                <button onClick={() => setRouteFilter("friends")} aria-label="Show friends routes" className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${routeFilter === 'friends'
+                <button onClick={() => setRouteFilter("friends")} aria-label="Show friends routes" className={`px-4 py-2 rounded-lg font-semibold clickHover ${routeFilter === 'friends'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white text-gray-700'}`}>
                     Friends
                 </button>
 
-                <button onClick={() => setRouteFilter("previous")} aria-label="Show your previous routes" className={`px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer ${routeFilter === 'previous'
+                <button onClick={() => setRouteFilter("previous")} aria-label="Show your previous routes" className={`px-4 py-2 rounded-lg font-semibold clickHover ${routeFilter === 'previous'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white text-gray-700'}`}>
                     Previous

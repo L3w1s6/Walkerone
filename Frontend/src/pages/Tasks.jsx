@@ -160,14 +160,14 @@ export default function Tasks() {
             <div className="flex justify-end mb-4 px-4 text-center">
                 <div className='flex w-full justify-between'>
                     {isEditing
-                            ? <button onClick={() => setIsEditing(false)} aria-label='Finish editing tasks' className='bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2'> Done </button>
-                            : <button onClick={() => setIsEditing(true)} aria-label='Edit tasks' className='bg-green-300 rounded-full px-6 py-4 text-xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2'> Edit </button>
+                            ? <button onClick={() => setIsEditing(false)} aria-label='Finish editing tasks' className='bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2'> Done </button>
+                            : <button onClick={() => setIsEditing(true)} aria-label='Edit tasks' className='bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2'> Edit </button>
                     }
 
                     <CreateTaskMenu showCreate={showCreate} handleSubmit={handleSubmit} taskName={taskName} setTaskName={setTaskName} taskDescription={taskDescription} setTaskDescription={setTaskDescription} taskDate={taskDate} setTaskDate={setTaskDate} setShowCreate={setShowCreate}/>
                     
                     
-                    <button onClick={createTask} aria-label="Create a new task" className="bg-green-300 rounded-full px-6 py-4 text-4xl cursor-pointer transition active:scale-95 hover:bg-green-400 m-2">
+                    <button onClick={createTask} aria-label="Create a new task" className="bg-green-300 rounded-full px-6 py-4 text-4xl clickHover hover:bg-green-400 m-2">
                         +
                     </button>
                 </div>
