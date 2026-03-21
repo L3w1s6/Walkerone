@@ -3,7 +3,32 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import {Link} from 'react-router-dom';
-import {HiReply} from "react-icons/hi";
+import {HiReply, HiCog, HiLockClosed, HiCheck} from "react-icons/hi";
+
+//Custom colour gradient cog
+const ColourWheelCog = ({click}) => {
+    return (
+        <div className="flex justify-center items-center">
+            {/* Hidden gradient as SVG */}
+            <svg className="absolute w-0 h-0">
+                <defs>
+                    <linearGradient id="colour-wheel" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="16%" stopColor="#f97316" />
+                        <stop offset="33%" stopColor="#eab308" />
+                        <stop offset="50%" stopColor="#22c55e" />
+                        <stop offset="66%" stopColor="#3b82f6" />
+                        <stop offset="83%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#d946ef" />
+                    </linearGradient>
+                </defs>
+            </svg>
+
+            {/* Apply gradient & animation */}
+            <HiCog className="w-12 h-12 fill-[url(#colour-wheel)] transition hover:scale-115 cursor-pointer" onClick={click} />
+        </div>
+    )
+}
 
 export default function RouteInfo() {
     const location = useLocation();
@@ -11,6 +36,17 @@ export default function RouteInfo() {
     const mapContainer = useRef(null);
     const map = useRef(null);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const [showPicker, setShowPicker] = useState(false);
+    const [colourOps, setColourOps] = useState([
+        {colour: "#f00", locked: false},
+        {colour: "#ff0", locked: false},
+        {colour: "#0f0", locked: false},
+        {colour: "#00f", locked: false},
+        {colour: "#f0f", locked: true},
+        {colour: "#0af", locked: true},
+        {colour: "#f90", locked: true},
+        {colour: "#0fa", locked: true}
+    ]);
 
     useEffect(() => {
         if (!route || !mapContainer.current || map.current) {
@@ -83,13 +119,29 @@ export default function RouteInfo() {
 
     return (
         <div className="w-full h-full flex flex-col justify-between z-0">
-            <div className="flex flex-row gap-4 items-center bg-white text-grey-600 rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
+            <div className="flex flex-row gap-4 justify-between items-center bg-white text-grey-600 rounded-lg m-4 p-2 z-20">{/*Header containing back button & name*/}
                 <Link to="/routes2" aria-label="Back to routes">
-                    <div className="flex items-center cursor-pointer">
-                        <HiReply className="w-12 h-12"/>
-                    </div>
+                    <HiReply className="flex items-center w-12 h-12 clickHover"/>
                 </Link>
+
                 <h1 className="grow text-3xl font-bold">{route.name}</h1>
+
+                {/* Popup colour picker */}
+                {showPicker && <div className="absolute top-24 left-4 bg-white w-104 rounded-lg flex flex-row items-center gap-2 p-2">
+                    {/* List of colours */}
+                    {colourOps.map((item, i) => (
+                        <button key={i} style={{backgroundColor: item.colour}} disabled={item.locked} className={`flex justify-center items-center w-12 aspect-square rounded-full border-4 border-grey-600
+                        ${item.locked ? "opacity-40 cursor-not-allowed" : "clickHover"}`}
+                        onClick={() => {console.log(i + " clicked")}}>
+                            {item.locked && <HiLockClosed className="w-50% h-50% text-white" />}
+                        </button>
+                    ))}
+                    <HiCheck className="w-12 h-12 clickHover" onClick={() => {console.log("apply colour & save to db (TODO)")}} />{/* Apply colour btn */}
+                </div>}
+                
+                <button>
+                    <ColourWheelCog click={() => {setShowPicker(!showPicker)}} />{/* Experimenting with gradient coloured cog */}
+                </button>
             </div>
 
             <div className="routeInfoMap flex-col top-0 z-10">{/*Map loading & actual (positioned behind)*/}
