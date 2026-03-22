@@ -815,6 +815,15 @@ app.get("/getTasks", async (req, res) => {
 
 });
 
+// Delete a task with the provided ID
+app.delete("/deleteTask/:id", async (req, res) => {
+  const deletedTask = await taskModel.findByIdAndDelete(req.params.id);
+  if (!deletedTask) {
+    return res.status(404).json({ message: "Task not found, no task has been deleted" });
+  }
+  res.json(deletedTask);
+});
+
 // Delete a route with the provided ID
 app.delete("/deleteRoute/:id", async (req, res) => {
   const deletedRoute = await routeModel.findByIdAndDelete(req.params.id);

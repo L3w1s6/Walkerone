@@ -114,6 +114,22 @@ export default function Tasks() {
         );
     };
 
+    const deleteTask = async (taskId) => {
+        try {
+            const response = await fetch(`/deleteTask/${taskId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to delete task:', err);
+            return;
+        }
+
+        setTasks((currentTasks) => currentTasks.filter((t) => (t._id || t.id) !== taskId));
+    };
+
     const ongoingTasks = tasks.filter((task) => !task.completed);
     const completedTasks = tasks.filter((task) => task.completed);
 
@@ -137,7 +153,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {ongoingTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} onDelete={() => deleteTask(task._id || task.id)} />
                             ))}
                         </div>
                     </div>}
@@ -149,7 +165,7 @@ export default function Tasks() {
                         </div>
                         <div className="flex flex-col px-5 divide-y divide-gray-200">
                             {completedTasks.map((task) => (
-                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} />
+                                <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} assignedBy={task.assignedBy} isEditing={isEditing} onToggle={() => toggleTaskCompletion(task._id || task.id)} onSave={(updates) => updateTask(task._id || task.id, updates)} onDelete={() => deleteTask(task._id || task.id)} />
                             ))}
                         </div>
                     </div>}

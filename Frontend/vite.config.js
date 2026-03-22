@@ -88,6 +88,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/deleteTask': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/showRoutesByUser': {
         target: 'http://localhost:8000',
         changeOrigin: true

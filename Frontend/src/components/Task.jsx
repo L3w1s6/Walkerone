@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GiHealthNormal } from "react-icons/gi";
 
-export default function Task({name, description, completionDate, taskCompleted, assignedBy, isEditing, onToggle, onSave}) {
+export default function Task({name, description, completionDate, taskCompleted, assignedBy, isEditing, onToggle, onSave, onDelete}) {
     const userEmail = localStorage.getItem('userEmail');
     const [editName, setEditName] = useState(name);
     const [editDescription, setEditDescription] = useState(description);
@@ -44,9 +44,9 @@ export default function Task({name, description, completionDate, taskCompleted, 
 
                     <input type="datetime-local" className="text-xs text-neutral-500 focus:outline-none focus:border-green-500" aria-label="Task due date and time" value={editDate} onChange={(e) => setEditDate(e.target.value)}/>
                 </div>
-                <div className="h-16 w-16 bg-red-200 flex justify-center items-center rounded-full select-none clickHover hover:bg-red-200/75">
+                <button type="button" onClick={onDelete} aria-label="Delete task" className="h-16 w-16 bg-red-200 flex justify-center items-center rounded-full select-none clickHover hover:bg-red-200/75">
                     <span className="text-4xl"> ❌ </span>
-                </div>
+                </button>
             </>}
             {(!isEditing || (isEditing && assignedBy !== userEmail)) && <>
                 <div>

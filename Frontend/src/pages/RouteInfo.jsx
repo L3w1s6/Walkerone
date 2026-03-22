@@ -5,6 +5,13 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {Link} from 'react-router-dom';
 import {HiReply, HiCog, HiLockClosed, HiCheck} from "react-icons/hi";
 
+// Gold badge thresholds match the badge progression used in profile
+const badgeGoldTargets = {
+    steps: 100000,
+    distance: 100,
+    routes: 50
+};
+
 //Custom colour gradient cog
 const ColourWheelCog = ({click}) => {
     return (
@@ -33,6 +40,8 @@ const ColourWheelCog = ({click}) => {
 export default function RouteInfo() {
     const location = useLocation();
     const route = location.state?.route; // Get the route from the state of this page (set in the routes page)
+    const currentUsername = localStorage.getItem("username");
+    const isOwnRoute = route?.username === currentUsername;
     const mapContainer = useRef(null);
     const map = useRef(null);
     const [mapLoaded, setMapLoaded] = useState(false);
@@ -49,24 +58,73 @@ export default function RouteInfo() {
     ]);//list of colours (some locked behind badges)
     const [selectedColour, setSelectedColour] = useState(-1);//index for colour options
 
+    // Unlock 1 of the 4 locked colours per gold badge, and unlock all 4 when all badges are gold
+    useEffect(() => {
+        const updateUnlockedColours = async () => {
+            // Only calculate unlocks for the logged in user's own routes
+            if (!isOwnRoute || !currentUsername) {
+                return;
+            }
+
+            try {
+                // Get all the user's routes to calculate total steps, distance, and route count
+                const response = await fetch(`/showRoutesByUser/${encodeURIComponent(currentUsername)}`);
+                if (!response.ok) {
+                    return;
+                }
+
+                const routesData = await response.json();
+                const routes = Array.isArray(routesData) ? routesData : [];
+                const totals = routes.reduce((total, currentRoute) => {
+                    return {
+                        steps: total.steps + (Number(currentRoute.stepCount) || 0),
+                        distance: total.distance + (Number(currentRoute.distance) || 0),
+                        routes: total.routes + 1
+                    };
+                }, { steps: 0, distance: 0, routes: 0 });
+
+                const goldBadges =
+                    (totals.steps >= badgeGoldTargets.steps ? 1 : 0) +
+                    (totals.distance >= badgeGoldTargets.distance ? 1 : 0) +
+                    (totals.routes >= badgeGoldTargets.routes ? 1 : 0);
+
+                const unlockedLockedColours = goldBadges === 3 ? 4 : goldBadges;  // 3 gold badges should unlock the fourth locked colour as well
+
+                // First 4 colours are always available then unlock the remaining 4 based on earned gold badges
+                setColourOps((previousColours) => previousColours.map((colourOption, index) => {
+                    if (index < 4) {
+                        return { ...colourOption, locked: false };
+                    }
+
+                    const lockedColourIndex = index - 4;
+                    return { ...colourOption, locked: lockedColourIndex >= unlockedLockedColours };
+                }));
+            } catch (error) {
+                console.error("Failed to update colour unlocks", error);
+            }
+        };
+
+        updateUnlockedColours();
+    }, [isOwnRoute, currentUsername]);
+
     //set colour field in db for current route
     async function applyColour() {
+        if (!isOwnRoute || selectedColour < 0 || selectedColour >= colourOps.length || colourOps[selectedColour].locked) {
+            return; // return apply when route is not owned, selection is invalid, or selected colour is still locked
+        }
+
         if (colourOps[selectedColour].colour != route.color) {//check if same colour to save db calls
-            if (selectedColour > -1 && selectedColour < colourOps.length) {//verify valid colour index selected
-                try {
-                    const res = await fetch("/updateRouteColour", {
-                        method: "PATCH",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({id: route._id, colour: colourOps[selectedColour].colour})
-                    });
-                    console.log(res.ok);
-    
-                    console.log(`applied colour ${selectedColour} to route ${route._id}`);
-                } catch (e) {
-                    console.error(e)
-                }
-            } else {
-                console.log("can't apply colour, invalid colour selected");
+            try {
+                const res = await fetch("/updateRouteColour", {
+                    method: "PATCH",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({id: route._id, colour: colourOps[selectedColour].colour})
+                });
+                console.log(res.ok);
+
+                console.log(`applied colour ${selectedColour} to route ${route._id}`);
+            } catch (e) {
+                console.error(e)
             }
         } else {
             console.log("can't apply colour, matches existing colour");
@@ -158,7 +216,7 @@ export default function RouteInfo() {
                 <h1 className="grow text-3xl font-bold">{route.name}</h1>
 
                 {/* Popup colour picker */}
-                {showPicker && <div className="absolute top-24 left-4 bg-white w-104 rounded-lg flex flex-row items-center gap-2 p-2">
+                {isOwnRoute && showPicker && <div className="absolute top-24 left-4 bg-white w-104 rounded-lg flex flex-row items-center gap-2 p-2">
                     {/* List of colours */}
                     {colourOps.map((item, i) => (
                         <button key={i} style={{backgroundColor: item.colour}} disabled={item.locked} className={`flex justify-center items-center w-12 aspect-square rounded-full border-4 border-grey-600
@@ -170,7 +228,9 @@ export default function RouteInfo() {
                     <HiCheck className="w-12 h-12 clickHover" aria-label="Apply selected colour" onClick={applyColour} />{/* Apply colour btn */}
                 </div>}
                 
-                <ColourWheelCog aria-label="Show route colour picker" click={() => {setShowPicker(!showPicker)}} />{/* Experimenting with gradient coloured cog */}
+                {isOwnRoute && (
+                    <ColourWheelCog aria-label="Show route colour picker" click={() => {setShowPicker(!showPicker)}} />
+                )}{/* Experimenting with gradient coloured cog */}
             </div>
 
             <div className="routeInfoMap flex-col top-0 z-10">{/*Map loading & actual (positioned behind)*/}
