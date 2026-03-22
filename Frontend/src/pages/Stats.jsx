@@ -351,8 +351,8 @@ export default function Stats() {
             </div>
 
             <div className='flex flex-row justify-between items-center pb-4'>
-                <span className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2">Import</span>
-                <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover-[1.1] hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
+                <span className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2">Import</span>
+                <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
             </div>
         </div>
     )

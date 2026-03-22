@@ -46,7 +46,32 @@ export default function RouteInfo() {
         {colour: "#0af", locked: true},
         {colour: "#f90", locked: true},
         {colour: "#0fa", locked: true}
-    ]);
+    ]);//list of colours (some locked behind badges)
+    const [selectedColour, setSelectedColour] = useState(-1);//index for colour options
+
+    //set colour field in db for current route
+    async function applyColour() {
+        if (colourOps[selectedColour].colour != route.color) {//check if same colour to save db calls
+            if (selectedColour > -1 && selectedColour < colourOps.length) {//verify valid colour index selected
+                try {
+                    const res = await fetch("/updateRouteColour", {
+                        method: "PATCH",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({id: route._id, colour: colourOps[selectedColour].colour})
+                    });
+                    console.log(res.ok);
+    
+                    console.log(`applied colour ${selectedColour} to route ${route._id}`);
+                } catch (e) {
+                    console.error(e)
+                }
+            } else {
+                console.log("can't apply colour, invalid colour selected");
+            }
+        } else {
+            console.log("can't apply colour, matches existing colour");
+        }
+    };
 
     useEffect(() => {
         if (!route || !mapContainer.current || map.current) {
@@ -88,7 +113,7 @@ export default function RouteInfo() {
                     'line-cap': 'round'
                 },
                 paint: {
-                    'line-color': '#888',
+                    'line-color': route.color,
                     'line-width': 8
                 }
             })
@@ -113,6 +138,12 @@ export default function RouteInfo() {
         }
     }, [route]);
 
+    useEffect(() => {//change route colour VISUALLY when colour selected
+        if (map.current && mapLoaded) {
+            map.current.setPaintProperty("route", "line-color", colourOps[selectedColour].colour);
+        }
+    }, [selectedColour]);
+
     if (!route) {
         return <div className="p-4"> No route data available </div>
     }
@@ -132,16 +163,14 @@ export default function RouteInfo() {
                     {colourOps.map((item, i) => (
                         <button key={i} style={{backgroundColor: item.colour}} disabled={item.locked} className={`flex justify-center items-center w-12 aspect-square rounded-full border-4 border-grey-600
                         ${item.locked ? "opacity-40 cursor-not-allowed" : "clickHover"}`}
-                        onClick={() => {console.log(i + " clicked")}}>
+                        onClick={() => {console.log(i + " clicked"); setSelectedColour(i)}}>
                             {item.locked && <HiLockClosed className="w-50% h-50% text-white" />}
                         </button>
                     ))}
-                    <HiCheck className="w-12 h-12 clickHover" onClick={() => {console.log("apply colour & save to db (TODO)")}} />{/* Apply colour btn */}
+                    <HiCheck className="w-12 h-12 clickHover" aria-label="Apply selected colour" onClick={applyColour} />{/* Apply colour btn */}
                 </div>}
                 
-                <button>
-                    <ColourWheelCog click={() => {setShowPicker(!showPicker)}} />{/* Experimenting with gradient coloured cog */}
-                </button>
+                <ColourWheelCog aria-label="Show route colour picker" click={() => {setShowPicker(!showPicker)}} />{/* Experimenting with gradient coloured cog */}
             </div>
 
             <div className="routeInfoMap flex-col top-0 z-10">{/*Map loading & actual (positioned behind)*/}

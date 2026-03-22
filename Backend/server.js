@@ -663,7 +663,7 @@ app.post("/addRoute", async (req, res) => {
     endTime: endTime,
     coordinates: coordinates,
     username: user[0]["username"], //PLACEHOLDER
-    color: "grey"
+    color: "#888"
   });
   await route.save();
   res.json(route);
@@ -715,6 +715,25 @@ app.patch("/updateTask/:id", async (req, res) => {
     console.log(err);
   }
 
+});
+
+//update colour of specific route
+app.patch("/updateRouteColour", async (req, res) => {
+  try {
+    const {id, colour} = req.body;
+    if (!colour) {return res.status(400).json({message:"No colour value specified"})}//verify
+
+    const updatedRoute = await routeModel.findByIdAndUpdate(
+      id,
+      {color: colour},
+      {new: true}
+    );
+    if (!updatedRoute) {return res.status(400).json({message:"Route not found"})}//verify
+
+    res.json(updatedRoute);
+  } catch (err) {
+    console.log("Error updating route colour: ", err);
+  }
 });
 
 app.get("/getRoutesPeriod", async (req, res) => {
@@ -905,7 +924,7 @@ io.on("connection", (socket) => {
       endTime: new Date().toISOString(),
       coordinates: routeData.coordinates,
       username: username,
-      color: "grey"
+      color: "#888"
     });
 
     await route.save();
@@ -928,7 +947,7 @@ io.on("connection", (socket) => {
       endTime: data.endTime,
       coordinates: data.coordinates,
       username: data.username,
-      color: "grey"
+      color: "#888"
     });
     await route.save();
     socket.emit("routeAdded", { success: true, route });
