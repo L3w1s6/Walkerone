@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GiHealthNormal } from "react-icons/gi";
 
-export default function Task({name, description, completionDate, taskCompleted, assignedBy, isEditing, onToggle, onSave, onDelete}) {
+export default function Task({name, description, completionDate, taskCompleted, assignedBy, isEditing, onToggle, onSave, onDelete, showDeleteButton}) {
     const userEmail = localStorage.getItem('userEmail');
     const [editName, setEditName] = useState(name);
     const [editDescription, setEditDescription] = useState(description);
@@ -60,9 +60,15 @@ export default function Task({name, description, completionDate, taskCompleted, 
                         }
                     </div>
                 </div>
-                <button type="button" onClick={onToggle} aria-label={taskCompleted ? 'Mark task as incomplete' : 'Mark task as complete'} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full select-none clickHover`}>
+                {showDeleteButton ? (
+                    <button type="button" onClick={onDelete} aria-label="Delete task" className="h-10 w-10 bg-red-200 flex justify-center items-center rounded-lg hover:bg-red-300 transition text-sm font-bold cursor-pointer">
+                        ✕
+                    </button>
+                ) : (
+                    <button type="button" onClick={onToggle} aria-label={taskCompleted ? 'Mark task as incomplete' : 'Mark task as complete'} className={`h-inherit w-16 ${taskCompleted ? "bg-green-300" : "bg-gray-200"} flex justify-center items-center rounded-full select-none clickHover cursor-pointer`}>
                         <span className="text-4xl"> ✔️ </span>
                     </button>
+                )}
             </>}
         </div>
     )

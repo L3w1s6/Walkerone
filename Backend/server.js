@@ -237,14 +237,15 @@ app.get('/api/user/:email', async (req, res) => {
   }
 });
 
-// Update user bio or pfp
+// Update user bio, pfp, or username
 app.put('/api/user/update', async (req, res) => {
   try {
-    const { email, bio, pfp } = req.body;
+    const { email, bio, pfp, username } = req.body;
 
     const updateData = {};
     if (bio !== undefined) updateData.bio = bio;
     if (pfp !== undefined) updateData.pfp = pfp;
+    if (username !== undefined) updateData.username = username;
 
     // Find the user by email and update them
     const updatedUser = await userModel.findOneAndUpdate(

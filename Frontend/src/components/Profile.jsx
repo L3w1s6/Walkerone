@@ -409,8 +409,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
         setShowEditDetails(true);
     };
 
-    // Update the profile (only frontend atm) when changing username
-    const handleSaveProfileDetails = (e) => {
+    // Update profile details when changing username
+    const handleSaveProfileDetails = async (e) => {
         e.preventDefault();
 
         const newUsername = editedUsername.trim();
@@ -418,9 +418,24 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             return;
         }
 
-        setUsername(newUsername);
-        setEditedPassword('');
-        setShowEditDetails(false);
+        try {
+            const response = await fetch('/api/user/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: profileEmail, username: newUsername }),
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            setUsername(newUsername);
+            localStorage.setItem('username', newUsername);
+            setEditedPassword('');
+            setShowEditDetails(false);
+        } catch (error) {
+            console.error('Failed to save profile details:', error);
+        }
     };
 
     // Get assigned tasks for the assigned user's profile being viewed
@@ -439,6 +454,21 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             }
         } catch (error) {
             console.error('Failed to fetch assigned user tasks', error);
+        }
+    };
+
+    // Delete an assigned task
+    const handleDeleteTask = async (taskId) => {
+        if (!confirm('Delete this assigned goal?')) {
+            return;
+        }
+        try {
+            const response = await fetch(`/deleteTask/${taskId}`, { method: 'DELETE' });
+            if (response.ok) {
+                setAssignedUserTasks(prev => prev.filter(task => task._id !== taskId));
+            }
+        } catch (error) {
+            console.error('Failed to delete task', error);
         }
     };
 
@@ -724,7 +754,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 <h1 className="text-lg uppercase font-black text-green-400 mb-1"> Assigned Goals </h1>
                 <div className="flex flex-col gap-2 justify-center mt-3 pt-3 border-t border-green-200/50">
                     {assignedUserTasks.map((task) => (
-                        <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => {}} />
+                        <Task key={task._id || task.id} name={task.name} description={task.description} completionDate={task.completionDate} taskCompleted={task.completed} onToggle={() => {}} onDelete={() => handleDeleteTask(task._id)} showDeleteButton={true} />
                     ))}
                 </div>
 
