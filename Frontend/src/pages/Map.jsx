@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { io } from 'socket.io-client';
+import { TbMapPinPin } from "react-icons/tb";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN; // Get mapbox token from .env file (use public key later)
 
@@ -11,6 +12,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const mapRef = useRef();
   const mapContainerRef = useRef();
   const geolocateRef = useRef(null); // Store geolocation control to trigger it again
+  const lastAutoRecenterAtRef = useRef(0); // Time for when last recenter was when recording a route
   const [error, setError] = useState(null); // State for storing errors
   const [userLocation, setUserLocation] = useState(null); // State for user location, initially set to null
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -20,6 +22,14 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
   const userEmail = localStorage.getItem('userEmail');
   const username = localStorage.getItem('username');
   const routeOwner = username || userEmail;
+  const AUTO_RECENTER_INTERVAL_MS = 5000;
+
+  // Recenter the map on button press
+  const handleRecenter = () => {
+    if (geolocateRef.current) {
+      geolocateRef.current.trigger();
+    }
+  };
 
   /*
   * How It Works:
@@ -131,7 +141,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
         center: [longitude, latitude], // Center map on the user's current location
-        zoom: 15,
+        zoom: 12,
         bearing: heading !== null ? heading : 0
       });
 
@@ -171,7 +181,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
         // Display blue circle around user location
         const geolocate = new mapboxgl.GeolocateControl({
-          trackUserLocation: true,
+          trackUserLocation: false,
           showUserLocation: true,
           showAccuracyCircle: true,
           showUserHeading: true,
@@ -363,6 +373,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     }
 
     setIsRecording(true); // Update parent state
+    lastAutoRecenterAtRef.current = 0;
     setCoordinates([]); // Clear previous route data
     setLiveStats({ steps: 0, distance: 0, calories: 0, points: 0 });
 
@@ -388,8 +399,10 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
           });
         }
 
-        if (mapRef.current) {
-          mapRef.current.flyTo({ center: [longitude, latitude], zoom: 15 }); // Center map on new user location
+        const now = Date.now();
+        if (mapRef.current && now - lastAutoRecenterAtRef.current >= AUTO_RECENTER_INTERVAL_MS) { // Only recenter when the last recenter was 5+ seconds ago
+          lastAutoRecenterAtRef.current = now; // Set last recenter time to be now
+          mapRef.current.flyTo({ center: [longitude, latitude], zoom: 12 });
         }
       },
 
@@ -413,6 +426,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       watchIdRef.current = null; // Clear current GPS tracking session ID, now that it's over
     }
     setIsRecording(false); // Update parent state
+    lastAutoRecenterAtRef.current = 0;
 
     // Tell backend to calculate step count and save
     if (socket && routeOwner) {
@@ -492,8 +506,12 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       });
     }
 
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 }); // Update map with new coordinates as center
+    if (isRecording) {
+      const now = Date.now();
+      if (mapRef.current && now - lastAutoRecenterAtRef.current >= AUTO_RECENTER_INTERVAL_MS) {
+        lastAutoRecenterAtRef.current = now;
+        mapRef.current.flyTo({ center: [newlong, newLat], zoom: 12 });
+      }
     }
   };
 
@@ -512,14 +530,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
       {/* Route Stats */}
       {isRecording && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '20px', 
-          right: '20px', 
-          background: 'white', 
-          padding: '15px', 
-          borderRadius: '10px', // Round edges for box instead of sharp
-        }}>
+        <div style={{ position: 'absolute', top: '20px', right: '20px', background: 'white', padding: '15px', borderRadius: '10px'}}>
           <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '5px 0' }}>Recording...</p>
           <p style={{ margin: '5px 0' }}>Steps: <strong>{liveStats.steps}</strong></p>
           <p style={{ margin: '5px 0' }}>Distance: <strong>{liveStats.distance.toFixed(2)} km</strong></p> 
@@ -536,6 +547,9 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         <button onClick={() => simulateMovement('south')} aria-label="Move south" className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-2 rounded shadow cursor-pointer"> ↓ </button>
         <button onClick={() => simulateMovement('east')} aria-label="Move east" className="bg-white p-2 font-semibold w-10 h-10 col-start-3 row-start-2 rounded shadow cursor-pointer"> → </button>
       </div>
+      <button onClick={handleRecenter} aria-label="Recenter map" className="absolute bottom-25 right-5 bg-white px-3 py-2 rounded shadow font-semibold cursor-pointer">
+        <TbMapPinPin />
+      </button>
     </div>
   );
 }
