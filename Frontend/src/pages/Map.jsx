@@ -547,8 +547,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         <button onClick={() => simulateMovement('south')} aria-label="Move south" className="bg-white p-2 font-semibold w-10 h-10 col-start-2 row-start-2 rounded shadow cursor-pointer"> ↓ </button>
         <button onClick={() => simulateMovement('east')} aria-label="Move east" className="bg-white p-2 font-semibold w-10 h-10 col-start-3 row-start-2 rounded shadow cursor-pointer"> → </button>
       </div>
-      <button onClick={handleRecenter} aria-label="Recenter map" className="absolute bottom-25 right-5 bg-white px-3 py-2 rounded shadow font-semibold cursor-pointer">
-        <TbMapPinPin />
+      <button onClick={handleRecenter} aria-label="Recenter map" className="absolute bottom-25 right-5 h-12 w-12 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition duration-200 cursor-pointer flex items-center justify-center">
+        <TbMapPinPin className="text-slate-800 text-xl" />
       </button>
     </div>
   );

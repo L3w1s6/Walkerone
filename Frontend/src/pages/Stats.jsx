@@ -26,7 +26,7 @@ ChartJS.register(
 );
 
 import {HiRewind, HiFastForward, HiArrowRight} from 'react-icons/hi';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { Link } from 'react-router-dom';
 
 //function to create heartrate colour gradient
@@ -105,12 +105,48 @@ function genHR(str1, str2, noPoints) {
 
 export default function Stats() {
     const email = localStorage.getItem("userEmail");
+    const importInputRef = useRef(null);
 
     const [weekStr, setWeekStr] = useState(dateRangeStr(weekRange));//display date range
     const [heartLabels, setHeartLabels] = useState([0,1]);//heartrate x axis labels
     const [heartData, setHeartData] = useState([{x: 0, y: 60},{x: 1, y: 180}]);//heartrate data (points)
     const [stepData, setStepData] = useState([0, 1]);//steps data (taken, remaining)
     const [calData, setCalData] = useState([0, 1]);//calories data (burned, remaining)
+
+    // Import stats from a CSV exported by this page and apply them to the current charts.
+    const importCsv = async ({ target }) => {
+        const file = target.files?.[0];
+        if (!file) return;
+
+        const clean = (v) => String(v ?? '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+        const num = (v) => Number(clean(v));
+
+        try {
+            const rows = (await file.text())
+                .split(/\r?\n/)
+                .filter(Boolean)
+                .map((line) => line.split(',').map(clean));
+
+            // Pull summary values from the value rows
+            const getValue = (label) => rows.find((r) => r[0] === label)?.[1];
+            const steps = num(getValue('Steps Done'));
+            const calories = num(getValue('Calories Burned'));
+
+            // Everything after the heartrate header is treated as time/BPM points
+            const heartStart = rows.findIndex((r) => r[0] === 'Heartrate Time');
+            const heart = rows.slice(heartStart + 1)
+                .map(([x, y]) => ({ x: Number(x), y: Number(y) }))
+                .filter((p) => !Number.isNaN(p.x) && !Number.isNaN(p.y));
+
+            if (!Number.isNaN(steps)) setStepData([steps, Math.max(0, 10000 - steps)]);
+            if (!Number.isNaN(calories)) setCalData([calories, Math.max(0, 2000 - calories)]);
+            if (heart.length) setHeartData(heart);
+        } catch (e) {
+            console.error('Import failed: ', e);
+        }
+
+        target.value = ''; // Allow importing the same file again
+    }
 
     // Export current stats and heartrate data as a CSV file
     const exportCsv = () => {
@@ -351,7 +387,12 @@ export default function Stats() {
             </div>
 
             <div className='flex flex-row justify-between items-center pb-4'>
-                <span className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2">Import</span>
+                <>
+                    <input ref={importInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={importCsv}/>
+                    <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2" aria-label="Import stats from CSV" onClick={() => importInputRef.current?.click()}>
+                        Import
+                    </button>
+                </>
                 <button className="bg-green-300 rounded-full px-6 py-4 text-xl clickHover hover:bg-green-400 m-2" aria-label="Export stats as CSV" onClick={exportCsv}>Export</button>
             </div>
         </div>
