@@ -39,6 +39,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [editedPassword, setEditedPassword] = useState(''); // State for password edited in details menu
     const [friendsListStart, setFriendsListStart] = useState(0); // State for the current friends list start index
     const [badgeTotals, setBadgeTotals] = useState({ steps: 0, distance: 0, routes: 0 }); // Running totals used for tiered badges
+    const [profileLoaded, setProfileLoaded] = useState(false); // Ensure dependent fetches run after profile data is ready
     const badgeTierTargets = {
         steps: [10000, 50000, 100000],
         distance: [10, 50, 100],
@@ -91,6 +92,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             if (!profileEmail) {
                 return;
             }
+            setProfileLoaded(false);
             try {
                 const response = await fetch(`/api/user/${profileEmail}`);
                 const data = await response.json();
@@ -117,6 +119,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 }
             } catch (error) {
                 console.error("Failed to load profile", error);
+            } finally {
+                setProfileLoaded(true);
             }
         };
         fetchProfile();
@@ -540,7 +544,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     // Fetch totals for badges when badge section should be visible
     useEffect(() => {
         const fetchBadgeTotals = async () => {
-            if (isDoctor || !username || (!isOwnProfile && (!isAlreadyFriend || !friendshipChecked))) {
+            if (!profileLoaded || isDoctor || !username || (!isOwnProfile && (!isAlreadyFriend || !friendshipChecked))) {
                 return; // Return if not on own or a friend's profile
             }
 
@@ -572,7 +576,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             }
         };
         fetchBadgeTotals();
-    }, [username, isDoctor, isOwnProfile, isAlreadyFriend, friendshipChecked]);
+    }, [username, isDoctor, isOwnProfile, isAlreadyFriend, friendshipChecked, profileLoaded]);
 
     const stepsBadge = getBadgeTierData(badgeTotals.steps, badgeTierTargets.steps);
     const distanceBadge = getBadgeTierData(badgeTotals.distance, badgeTierTargets.distance);
