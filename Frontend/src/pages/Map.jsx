@@ -61,7 +61,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     // Listen for route saved confirmation
     newSocket.on('routeSaved', (data) => {
       if (data.success) {
-        alert(`Route saved!\n${data.route.stepCount} steps\n${data.route.distance.toFixed(2)} km\n${data.route.caloriesBurned} calories`);
+        //alert(`Route saved!\n${data.route.stepCount} steps\n${data.route.distance.toFixed(2)} km\n${data.route.caloriesBurned} calories`);
       } else {
         alert('Error: ' + data.message);
       }
@@ -141,7 +141,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
         center: [longitude, latitude], // Center map on the user's current location
-        zoom: 12,
+        zoom: 15,
         bearing: heading !== null ? heading : 0
       });
 
@@ -344,7 +344,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         startRecording();
 
         // testing purposes here!
-        alert("now recording");
+       // alert("now recording");
       }
     };
 
@@ -402,7 +402,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
         const now = Date.now();
         if (mapRef.current && now - lastAutoRecenterAtRef.current >= AUTO_RECENTER_INTERVAL_MS) { // Only recenter when the last recenter was 5+ seconds ago
           lastAutoRecenterAtRef.current = now; // Set last recenter time to be now
-          mapRef.current.flyTo({ center: [longitude, latitude], zoom: 12 });
+          mapRef.current.flyTo({ center: [longitude, latitude], zoom: 15 });
         }
       },
 
@@ -448,7 +448,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
 
         console.log('Route saved:', route);
         // testing
-        alert(JSON.stringify(route, null, 3));
+        //alert(JSON.stringify(route, null, 3));
 
         //
 
@@ -510,7 +510,7 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
       const now = Date.now();
       if (mapRef.current && now - lastAutoRecenterAtRef.current >= AUTO_RECENTER_INTERVAL_MS) {
         lastAutoRecenterAtRef.current = now;
-        mapRef.current.flyTo({ center: [newlong, newLat], zoom: 12 });
+        mapRef.current.flyTo({ center: [newlong, newLat], zoom: 15 });
       }
     }
   };
