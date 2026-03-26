@@ -61,7 +61,8 @@ export default function Map({ isRecording, setIsRecording, coordinates, setCoord
     // Listen for route saved confirmation
     newSocket.on('routeSaved', (data) => {
       if (data.success) {
-        alert(`Route saved!\n${data.route.stepCount} steps\n${data.route.distance.toFixed(2)} km\n${data.route.caloriesBurned} calories`);
+        // alert(`Route saved!\n${data.route.stepCount} steps\n${data.route.distance.toFixed(2)} km\n${data.route.caloriesBurned} calories`);
+        alert('Route saved!');
       } else {
         alert('Error: ' + data.message);
       }

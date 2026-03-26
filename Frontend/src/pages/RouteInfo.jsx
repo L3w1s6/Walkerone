@@ -120,9 +120,11 @@ export default function RouteInfo() {
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({id: route._id, colour: colourOps[selectedColour].colour})
                 });
-                console.log(res.ok);
 
-                console.log(`applied colour ${selectedColour} to route ${route._id}`);
+                if (res.ok) {//only hide picker if successful
+                    setShowPicker(false);
+                    console.log(`applied colour ${selectedColour} to route ${route._id}`);
+                }
             } catch (e) {
                 console.error(e)
             }

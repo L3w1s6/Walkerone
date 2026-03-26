@@ -5,7 +5,7 @@ export default function Routes() {
     const username = localStorage.getItem('username');
     const [ownPrevRoutes, setOwnPrevRoutes] = useState([]);
     const [friendsPrevRoutes, setFriendsPrevRoutes] = useState([]);
-    const [routeFilter, setRouteFilter] = useState("friends");
+    const [routeFilter, setRouteFilter] = useState("previous");
 
     useEffect(() => {
         fetchRoutes();
@@ -103,14 +103,14 @@ export default function Routes() {
             <div className="flex justify-center gap-2 mb-6">
                 <button onClick={() => setRouteFilter("friends")} aria-label="Show friends routes" className={`px-4 py-2 rounded-lg font-semibold clickHover ${routeFilter === 'friends'
                     ? 'bg-green-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700'}`}>
+                    : 'bg-gray-200 text-gray-700'}`}>
                     Friends
                 </button>
 
                 <button onClick={() => setRouteFilter("previous")} aria-label="Show your previous routes" className={`px-4 py-2 rounded-lg font-semibold clickHover ${routeFilter === 'previous'
                     ? 'bg-green-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700'}`}>
-                    Previous
+                    : 'bg-gray-200 text-gray-700'}`}>
+                    Mine
                 </button>
             </div>
 
