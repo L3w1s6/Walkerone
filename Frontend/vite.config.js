@@ -115,6 +115,14 @@ export default defineConfig({
       '/declineDoctors': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/removeUser': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/removeAssignedUser': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   }

@@ -39,6 +39,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     const [editedPassword, setEditedPassword] = useState(''); // State for password edited in details menu
     const [friendsListStart, setFriendsListStart] = useState(0); // State for the current friends list start index
     const [badgeTotals, setBadgeTotals] = useState({ steps: 0, distance: 0, routes: 0 }); // Running totals used for tiered badges
+    const [profileLoaded, setProfileLoaded] = useState(false); // Ensure dependent fetches run after profile data is ready
     const badgeTierTargets = {
         steps: [10000, 50000, 100000],
         distance: [10, 50, 100],
@@ -91,6 +92,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             if (!profileEmail) {
                 return;
             }
+            setProfileLoaded(false);
             try {
                 const response = await fetch(`/api/user/${profileEmail}`);
                 const data = await response.json();
@@ -117,6 +119,8 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 }
             } catch (error) {
                 console.error("Failed to load profile", error);
+            } finally {
+                setProfileLoaded(true);
             }
         };
         fetchProfile();
@@ -540,7 +544,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
     // Fetch totals for badges when badge section should be visible
     useEffect(() => {
         const fetchBadgeTotals = async () => {
-            if (isDoctor || !username || (!isOwnProfile && (!isAlreadyFriend || !friendshipChecked))) {
+            if (!profileLoaded || isDoctor || !username || (!isOwnProfile && (!isAlreadyFriend || !friendshipChecked))) {
                 return; // Return if not on own or a friend's profile
             }
 
@@ -553,12 +557,15 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                 const routesData = await response.json();
                 const routes = Array.isArray(routesData) ? routesData : [];
                 const totals = routes.reduce((total, route) => { // Get the total distance and steps from all of the user's routes
-                    const distance = Number(route.distance);
-                    const steps = Number(route.stepCount);
+                    const rawDistance = route?.distance ?? route?.distanceKm ?? route?.stats?.distance ?? 0;
+                    const rawSteps = route?.stepCount ?? route?.steps ?? route?.stats?.steps ?? 0;
+                    const distance = Number(rawDistance);
+                    const steps = Number(rawSteps);
+
                     return {
                         routes: total.routes + 1,
-                        distance: total.distance + distance,
-                        steps: total.steps + steps,
+                        distance: total.distance + (Number.isFinite(distance) ? distance : 0),
+                        steps: total.steps + (Number.isFinite(steps) ? steps : 0),
                     };
                 }, { steps: 0, distance: 0, routes: 0 });
 
@@ -569,7 +576,7 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
             }
         };
         fetchBadgeTotals();
-    }, [username, isDoctor, isOwnProfile, isAlreadyFriend, friendshipChecked]);
+    }, [username, isDoctor, isOwnProfile, isAlreadyFriend, friendshipChecked, profileLoaded]);
 
     const stepsBadge = getBadgeTierData(badgeTotals.steps, badgeTierTargets.steps);
     const distanceBadge = getBadgeTierData(badgeTotals.distance, badgeTierTargets.distance);
@@ -696,11 +703,11 @@ export default function Profile({ userEmail, isOwnProfile = false, onSignOut, on
                         </p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-200/50">
-                        <Badge emoji="👟" name="Steps" tier={stepsBadge.tier} progress={stepsBadge.progress} currentValue={`${badgeTotals.steps.toString()} steps`} nextTier={stepsBadge.nextTarget ? `${stepsBadge.nextTarget.toString()} steps` : null} description={`Bronze: ${badgeTierTargets.steps[0].toString()} steps \n Silver: ${badgeTierTargets.steps[1].toString()} steps \n Gold: ${badgeTierTargets.steps[2].toString()} steps`}/>
+                        <Badge emoji="👟" name="Steps" tier={stepsBadge.tier} progress={stepsBadge.progress} currentValue={`${badgeTotals.steps.toString()} steps`} nextTier={stepsBadge.nextTier ? `${stepsBadge.nextTier.toString()} steps` : null} description={`Bronze: ${badgeTierTargets.steps[0].toString()} steps \n Silver: ${badgeTierTargets.steps[1].toString()} steps \n Gold: ${badgeTierTargets.steps[2].toString()} steps`}/>
 
-                        <Badge emoji="🗺️" name="Distance" tier={distanceBadge.tier} progress={distanceBadge.progress} currentValue={`${badgeTotals.distance.toFixed(2)}km`} nextTier={distanceBadge.nextTarget ? `${distanceBadge.nextTarget.toString()}km` : null} description={`Bronze: ${badgeTierTargets.distance[0].toString()}km \n Silver: ${badgeTierTargets.distance[1].toString()}km \n Gold: ${badgeTierTargets.distance[2].toString()}km`}/>
+                        <Badge emoji="🗺️" name="Distance" tier={distanceBadge.tier} progress={distanceBadge.progress} currentValue={`${badgeTotals.distance.toFixed(2)}km`} nextTier={distanceBadge.nextTier ? `${distanceBadge.nextTier.toString()}km` : null} description={`Bronze: ${badgeTierTargets.distance[0].toString()}km \n Silver: ${badgeTierTargets.distance[1].toString()}km \n Gold: ${badgeTierTargets.distance[2].toString()}km`}/>
 
-                        <Badge emoji="📍" name="Routes" tier={routesBadge.tier} progress={routesBadge.progress} currentValue={`${badgeTotals.routes.toString()} routes`} nextTier={routesBadge.nextTarget ? `${routesBadge.nextTarget.toString()} routes` : null} description={`Bronze: ${badgeTierTargets.routes[0].toString()} routes \n Silver: ${badgeTierTargets.routes[1].toString()} routes \n Gold ${badgeTierTargets.routes[2].toString()} routes`}/>
+                        <Badge emoji="📍" name="Routes" tier={routesBadge.tier} progress={routesBadge.progress} currentValue={`${badgeTotals.routes.toString()} routes`} nextTier={routesBadge.nextTier ? `${routesBadge.nextTier.toString()} routes` : null} description={`Bronze: ${badgeTierTargets.routes[0].toString()} routes \n Silver: ${badgeTierTargets.routes[1].toString()} routes \n Gold ${badgeTierTargets.routes[2].toString()} routes`}/>
                     </div>
                 </div>
             </div>
